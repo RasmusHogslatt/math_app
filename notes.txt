@@ -1,0 +1,6 @@
+Backend:
+
+Fronted:
+generate questions and verify in frontend. Check send time, name and challenge id/enum to backend and let backend handle leaderboard.
+
+TODO: Ask how to display list of courses with more than two courses and click on the coursename.
