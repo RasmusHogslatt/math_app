@@ -72,6 +72,63 @@ pub fn leaderboard(props: &LeaderboardProps) -> Html {
         });
     }
 
+    // Inside the Leaderboard component in leaderboard.rs
+
+    // Add this useEffect to reset form states when the course changes
+    {
+        let player_name = player_name.clone();
+        let submit_status = submit_status.clone();
+        let submitted = submitted.clone();
+        let submitting = submitting.clone();
+
+        use_effect_with(props.course.clone(), move |_| {
+            player_name.set(String::new());
+            submit_status.set(None);
+            submitted.set(false);
+            submitting.set(false);
+            || ()
+        });
+    }
+
+    // In leaderboard.rs, inside the Leaderboard component
+    // Add this effect to reset submission states when course changes
+    {
+        let submitted = submitted.clone();
+        let player_name = player_name.clone();
+        let submit_status = submit_status.clone();
+        let submitting = submitting.clone();
+
+        use_effect_with(props.course.clone(), move |_| {
+            // Reset all submission-related states
+            submitted.set(false);
+            player_name.set(String::new());
+            submit_status.set(None);
+            submitting.set(false);
+
+            || ()
+        });
+    }
+
+    // In leaderboard.rs - add this effect
+    {
+        let submitted = submitted.clone();
+        let submitting = submitting.clone();
+        let player_name = player_name.clone();
+        let submit_status = submit_status.clone();
+        let user_time = props.user_time;
+
+        use_effect_with(user_time, move |_| {
+            // Reset submission states when new user_time arrives
+            if user_time.is_some() {
+                submitted.set(false);
+                submitting.set(false);
+                player_name.set(String::new());
+                submit_status.set(None);
+            }
+            || ()
+        });
+    }
+
     let on_name_change = {
         let player_name = player_name.clone();
         Callback::from(move |e: InputEvent| {
@@ -89,10 +146,15 @@ pub fn leaderboard(props: &LeaderboardProps) -> Html {
         let user_time = props.user_time;
         let submitting = submitting.clone();
         let submitted = submitted.clone();
+        let current_course = props.course.clone();
 
         Callback::from(move |e: SubmitEvent| {
             e.prevent_default();
-
+            // Add course validation check
+            if course != current_course {
+                submit_status.set(Some("Course changed - submission cancelled".into()));
+                return;
+            }
             // prevent double‐click
             if *submitting || *submitted {
                 return;
@@ -177,7 +239,7 @@ pub fn leaderboard(props: &LeaderboardProps) -> Html {
             <h2>{format!("{} Leaderboard", props.course)}</h2>
 
             // Submit score form
-            if props.show_submit && props.user_time.is_some() && !*submitted{
+            if props.show_submit && props.user_time.is_some() && !*submitted {
                 <div class="submit-score">
                     <h3>{"Submit Your Score"}</h3>
                     <p>{format!("Your time: {:.2} seconds", props.user_time.unwrap())}</p>

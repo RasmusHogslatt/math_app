@@ -326,15 +326,36 @@ fn app() -> Html {
     let on_restart = {
         let app_state = app_state.clone();
         let interval_ref = interval_ref.clone();
+        let questions = questions.clone();
+        let current_question = current_question.clone();
+        let elapsed_time = elapsed_time.clone();
 
         Callback::from(move |_| {
-            // Ensure any lingering interval is cancelled
+            // Cancel any ongoing interval
             if let Some(handle) = interval_ref.borrow_mut().take() {
                 handle.cancel();
             }
+            // Reset quiz-related states
+            questions.set(Vec::new());
+            current_question.set(0);
+            elapsed_time.set(Duration::from_secs(0));
             app_state.set(AppState::Selection);
         })
     };
+
+    // In App component (main.rs), add this effect
+    {
+        let course = course.clone();
+        let app_state = app_state.clone();
+
+        use_effect_with((*course).clone(), move |current_course| {
+            // Reset to selection state if course changes
+            if *current_course != Quiz::NoCourse && *app_state != AppState::Selection {
+                app_state.set(AppState::Selection);
+            }
+            || ()
+        });
+    }
 
     // Determine if a score should be submitted (only when in Result state with passing score)
     let show_submit = match *app_state {
