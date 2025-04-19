@@ -236,7 +236,7 @@ fn app() -> Html {
     let interval_ref = use_mut_ref(|| None::<Interval>);
 
     // Total number of questions
-    let total_questions = 10;
+    let total_questions = 3;
 
     // Course selection handler
     let on_course_change = {

@@ -22,6 +22,8 @@ pub fn leaderboard(props: &LeaderboardProps) -> Html {
     let error = use_state(|| None::<String>);
     let player_name = use_state(|| String::new());
     let submit_status = use_state(|| None::<String>);
+    let submitted = use_state(|| false);
+    let submitting = use_state(|| false);
 
     // Fetch leaderboard data when component mounts or course changes
     {
@@ -79,81 +81,93 @@ pub fn leaderboard(props: &LeaderboardProps) -> Html {
     };
 
     let on_submit_score = {
+        // outer clones (make the closure Fn, not FnOnce)
         let player_name = player_name.clone();
         let submit_status = submit_status.clone();
+        let entries = entries.clone();
         let course = props.course.clone();
         let user_time = props.user_time;
-        let entries = entries.clone();
+        let submitting = submitting.clone();
+        let submitted = submitted.clone();
 
         Callback::from(move |e: SubmitEvent| {
             e.prevent_default();
 
-            // Validate inputs
-            let name = (*player_name).clone();
-            if name.trim().is_empty() {
-                submit_status.set(Some("Please enter your name".to_string()));
+            // prevent double‐click
+            if *submitting || *submitted {
                 return;
             }
+            submitting.set(true);
 
-            let time: f64 = match user_time {
-                Some(t) => t,
-                None => {
-                    submit_status.set(Some("No valid time to submit".to_string()));
-                    return;
-                }
+            // validate
+            let name = (*player_name).trim().to_string();
+            if name.is_empty() {
+                submit_status.set(Some("Please enter your name".into()));
+                submitting.set(false);
+                return;
+            }
+            let time = if let Some(t) = user_time {
+                t
+            } else {
+                submit_status.set(Some("No valid time to submit".into()));
+                submitting.set(false);
+                return;
             };
 
-            let course_clone = course.clone();
-            let name_clone = name.clone();
-            let submit_status_clone = submit_status.clone();
-            let entries_clone = entries.clone();
+            submit_status.set(Some("Submitting…".into()));
 
-            submit_status.set(Some("Submitting...".to_string()));
+            // clones for async block
+            let submit_status = submit_status.clone();
+            let entries = entries.clone();
+            let course = course.clone();
+            let name = name.clone();
+            let submitting = submitting.clone();
+            let submitted = submitted.clone();
 
-            // Submit score to the backend
             spawn_local(async move {
-                let request = SubmitScoreRequest {
-                    name: name_clone,
-                    course: course_clone.clone(),
+                let req = SubmitScoreRequest {
+                    name,
+                    course: course.clone(),
                     time_seconds: time,
                 };
 
-                match Request::post(&format!("{}/api/submit", API_BASE_URL))
-                    .json(&request)
+                let resp = Request::post(&format!("{}/api/submit", API_BASE_URL))
+                    .json(&req)
                     .unwrap()
                     .send()
-                    .await
-                {
-                    Ok(response) => {
-                        if response.status() == 201 {
-                            submit_status_clone
-                                .set(Some("Score submitted successfully!".to_string()));
+                    .await;
 
-                            // Refresh leaderboard
-                            match Request::get(&format!(
-                                "{}/api/leaderboard?course={}",
-                                API_BASE_URL, course_clone
-                            ))
-                            .send()
-                            .await
-                            {
-                                Ok(leaderboard_response) => {
-                                    if let Ok(data) =
-                                        leaderboard_response.json::<Vec<LeaderboardEntry>>().await
-                                    {
-                                        entries_clone.set(data);
-                                    }
-                                }
-                                Err(_) => {}
-                            }
-                        } else {
-                            submit_status_clone.set(Some(format!("Error: {}", response.status())));
-                        }
+                match resp {
+                    Ok(r) if r.status() == 201 => {
+                        submit_status.set(Some("Score submitted!".into()));
+                        submitted.set(true);
                     }
-                    Err(e) => {
-                        submit_status_clone.set(Some(format!("Network error: {}", e)));
+                    Ok(r) if r.status() == 409 => {
+                        submit_status.set(Some("You already submitted that score.".into()));
+                        submitted.set(true);
+                    }
+                    Ok(r) => {
+                        submit_status.set(Some(format!("Error: {}", r.status())));
+                    }
+                    Err(err) => {
+                        submit_status.set(Some(format!("Network error: {}", err)));
                     }
                 }
+
+                // regardless of 201 or 409, we can refresh the leaderboard
+                if let Ok(lb) = Request::get(&format!(
+                    "{}/api/leaderboard?course={}",
+                    API_BASE_URL, course
+                ))
+                .send()
+                .await
+                {
+                    if let Ok(data) = lb.json::<Vec<LeaderboardEntry>>().await {
+                        entries.set(data);
+                    }
+                }
+
+                submitting.set(false);
             });
         })
     };
@@ -163,7 +177,7 @@ pub fn leaderboard(props: &LeaderboardProps) -> Html {
             <h2>{format!("{} Leaderboard", props.course)}</h2>
 
             // Submit score form
-            if props.show_submit && props.user_time.is_some() {
+            if props.show_submit && props.user_time.is_some() && !*submitted{
                 <div class="submit-score">
                     <h3>{"Submit Your Score"}</h3>
                     <p>{format!("Your time: {:.2} seconds", props.user_time.unwrap())}</p>
@@ -213,6 +227,7 @@ pub fn leaderboard(props: &LeaderboardProps) -> Html {
                     </tbody>
                 </table>
             }
+
         </div>
     }
 }
