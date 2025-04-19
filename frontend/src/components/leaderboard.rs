@@ -213,16 +213,6 @@ pub fn leaderboard(props: &LeaderboardProps) -> Html {
                     </tbody>
                 </table>
             }
-
-            // Server-side rendered version link
-            <div class="ssr-link">
-                <p>
-                    {"View "}
-                    <a href={format!("{}/leaderboard?course={}", API_BASE_URL, props.course)} target="_blank">
-                        {"server-rendered leaderboard"}
-                    </a>
-                </p>
-            </div>
         </div>
     }
 }
