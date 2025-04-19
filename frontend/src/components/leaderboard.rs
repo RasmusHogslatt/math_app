@@ -35,9 +35,12 @@ pub fn leaderboard(props: &LeaderboardProps) -> Html {
             error.set(None);
 
             spawn_local(async move {
-                match Request::get(&format!("{}/api/leaderboard?course={}", API_BASE_URL, course))
-                    .send()
-                    .await
+                match Request::get(&format!(
+                    "{}/api/leaderboard?course={}",
+                    API_BASE_URL, course
+                ))
+                .send()
+                .await
                 {
                     Ok(response) => {
                         if response.status() == 200 {
@@ -127,9 +130,12 @@ pub fn leaderboard(props: &LeaderboardProps) -> Html {
                                 .set(Some("Score submitted successfully!".to_string()));
 
                             // Refresh leaderboard
-                            match Request::get(&format!("{}/api/leaderboard?course={}", API_BASE_URL, course_clone))
-                                .send()
-                                .await
+                            match Request::get(&format!(
+                                "{}/api/leaderboard?course={}",
+                                API_BASE_URL, course_clone
+                            ))
+                            .send()
+                            .await
                             {
                                 Ok(leaderboard_response) => {
                                     if let Ok(data) =

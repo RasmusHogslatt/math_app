@@ -181,8 +181,6 @@ struct QuizSectionProps {
 
 #[function_component(ResultSection)]
 fn result_section(props: &ResultSectionProps) -> Html {
-    let show_leaderboard = use_state(|| props.passed);
-
     let message = if props.passed {
         format!(
             "Good job, you finished in {:.1} seconds!",
@@ -199,34 +197,13 @@ fn result_section(props: &ResultSectionProps) -> Html {
         })
     };
 
-    let toggle_leaderboard = {
-        let show_leaderboard = show_leaderboard.clone();
-        Callback::from(move |_| {
-            show_leaderboard.set(!*show_leaderboard);
-        })
-    };
-
     html! {
         <div class="result-section">
             <h2 class={if props.passed { "success" } else { "failure" }}>{message}</h2>
 
             <div class="result-actions">
                 <button onclick={on_restart}>{"Try Again"}</button>
-
-                if props.passed {
-                    <button onclick={toggle_leaderboard}>
-                        {if *show_leaderboard { "Hide Leaderboard" } else { "Show Leaderboard" }}
-                    </button>
-                }
             </div>
-
-            if *show_leaderboard && props.passed {
-                <Leaderboard
-                    course={props.course.to_string()}
-                    show_submit={true}
-                    user_time={Some(props.time_taken.as_secs_f64())}
-                />
-            }
         </div>
     }
 }
@@ -359,6 +336,18 @@ fn app() -> Html {
         })
     };
 
+    // Determine if a score should be submitted (only when in Result state with passing score)
+    let show_submit = match *app_state {
+        AppState::Result(passed, _) => passed,
+        _ => false,
+    };
+    
+    // Get the current time for submission (only when in Result state)
+    let user_time = match *app_state {
+        AppState::Result(passed, time_taken) if passed => Some(time_taken.as_secs_f64()),
+        _ => None,
+    };
+
     html! {
         <div class="app-container">
             <div class="sidebar">
@@ -411,17 +400,27 @@ fn app() -> Html {
                     }
                 }
             </div>
+            <div class="leaderboard-panel">
+                <Leaderboard
+                    course={(*course).to_string()}
+                    show_submit={show_submit}
+                    user_time={user_time}
+                />
+            </div>
             <style>
                 {r#"
                     .app-container {
                         display: flex;
                         height: 100vh;
+                        width: 100%;
+                        overflow: hidden; /* Prevent scrollbars due to full height */
                     }
                     .sidebar {
                         width: 250px;
                         padding: 20px;
                         background-color: #f5f5f5;
                         border-right: 1px solid #ddd;
+                        overflow-y: auto; /* Allow scrolling for long content */
                     }
                     .main-content {
                         flex: 1;
@@ -430,10 +429,121 @@ fn app() -> Html {
                         flex-direction: column;
                         justify-content: center;
                         align-items: center;
+                        min-width: 0; /* Prevents flex items from overflowing */
+                        overflow-y: auto; /* Allow scrolling for long content */
                     }
-                    .enum-list-selector ul {
-                        list-style-type: none;
-                        padding: 0;
+
+                    /* Leaderboard panel styles */
+                    .leaderboard-panel {
+                        width: 300px;
+                        padding: 20px;
+                        background-color: #f5f5f5;
+                        border-left: 1px solid #ddd;
+                        overflow-y: auto; /* Allow scrolling if content is too long */
+                        max-height: 100vh; /* Restrict maximum height to viewport height */
+                    }
+                    .leaderboard-container {
+                        width: 100%;
+                    }
+                    .leaderboard-container h2 {
+                        font-size: 1.5rem;
+                        margin-bottom: 15px;
+                        color: #333;
+                    }
+                    .leaderboard-table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin-top: 10px;
+                        font-size: 0.9rem;
+                    }
+                    .leaderboard-table th,
+                    .leaderboard-table td {
+                        padding: 8px;
+                        text-align: left;
+                        border-bottom: 1px solid #ddd;
+                    }
+                    .leaderboard-table th {
+                        background-color: #e6f7ff;
+                        color: #1890ff;
+                        font-weight: bold;
+                    }
+                    .leaderboard-table tr:nth-child(even) {
+                        background-color: #f9f9f9;
+                    }
+                    .leaderboard-table tr:hover {
+                        background-color: #e6f7ff;
+                    }
+                    .submit-score {
+                        margin-top: 20px;
+                        padding: 15px;
+                        background-color: #e6f7ff;
+                        border-radius: 4px;
+                        border: 1px solid #91d5ff;
+                    }
+                    .submit-score h3 {
+                        margin-top: 0;
+                        font-size: 1.2rem;
+                        color: #0050b3;
+                    }
+                    .submit-score form {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 10px;
+                        margin-top: 10px;
+                    }
+                    .submit-score input {
+                        padding: 8px;
+                        border: 1px solid #d9d9d9;
+                        border-radius: 4px;
+                        font-size: 0.9rem;
+                    }
+                    .submit-score button {
+                        padding: 8px 16px;
+                        background-color: #1890ff;
+                        color: white;
+                        border: none;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        font-size: 0.9rem;
+                        transition: background-color 0.3s;
+                    }
+                    .submit-score button:hover {
+                        background-color: #40a9ff;
+                    }
+                    .status-message {
+                        margin-top: 10px;
+                        font-size: 0.9rem;
+                        color: #52c41a;
+                    }
+                    .status-message.error {
+                        color: #f5222d;
+                    }
+                    .ssr-link {
+                        margin-top: 20px;
+                        font-size: 0.8rem;
+                    }
+                    .ssr-link a {
+                        color: #1890ff;
+                        text-decoration: none;
+                    }
+                    .ssr-link a:hover {
+                        text-decoration: underline;
+                    }
+
+                    /* Responsive adjustments */
+                    @media (max-width: 1024px) {
+                        .app-container {
+                            flex-direction: column;
+                            height: auto;
+                        }
+                        .sidebar, .leaderboard-panel {
+                            width: 100%;
+                            border: none;
+                            border-bottom: 1px solid #ddd;
+                        }
+                        .main-content {
+                            min-height: 50vh;
+                        }
                     }
                     .enum-list-selector li {
                         padding: 8px 12px;
