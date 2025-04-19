@@ -1,3 +1,5 @@
+mod components;
+use components::Leaderboard;
 use gloo_timers::callback::Interval;
 
 use rand::{Rng, rng};
@@ -179,6 +181,8 @@ struct QuizSectionProps {
 
 #[function_component(ResultSection)]
 fn result_section(props: &ResultSectionProps) -> Html {
+    let show_leaderboard = use_state(|| props.passed);
+
     let message = if props.passed {
         format!(
             "Good job, you finished in {:.1} seconds!",
@@ -195,10 +199,34 @@ fn result_section(props: &ResultSectionProps) -> Html {
         })
     };
 
+    let toggle_leaderboard = {
+        let show_leaderboard = show_leaderboard.clone();
+        Callback::from(move |_| {
+            show_leaderboard.set(!*show_leaderboard);
+        })
+    };
+
     html! {
         <div class="result-section">
             <h2 class={if props.passed { "success" } else { "failure" }}>{message}</h2>
-            <button onclick={on_restart}>{"Try Again"}</button>
+
+            <div class="result-actions">
+                <button onclick={on_restart}>{"Try Again"}</button>
+
+                if props.passed {
+                    <button onclick={toggle_leaderboard}>
+                        {if *show_leaderboard { "Hide Leaderboard" } else { "Show Leaderboard" }}
+                    </button>
+                }
+            </div>
+
+            if *show_leaderboard && props.passed {
+                <Leaderboard
+                    course={props.course.to_string()}
+                    show_submit={true}
+                    user_time={Some(props.time_taken.as_secs_f64())}
+                />
+            }
         </div>
     }
 }
@@ -207,6 +235,7 @@ fn result_section(props: &ResultSectionProps) -> Html {
 struct ResultSectionProps {
     pub passed: bool,
     pub time_taken: Duration,
+    pub course: Quiz,
     pub on_restart: Callback<()>,
 }
 
@@ -300,6 +329,8 @@ fn app() -> Html {
                     }
                     // Show success result
                     app_state.set(AppState::Result(true, *elapsed_time));
+                    // Show success result
+                    app_state.set(AppState::Result(true, *elapsed_time));
                 } else {
                     // Move to next question
                     current_question.set(current_q + 1);
@@ -373,6 +404,7 @@ fn app() -> Html {
                             <ResultSection
                                 passed={passed}
                                 time_taken={time_taken}
+                                course={(*course).clone()}
                                 on_restart={on_restart.clone()}
                             />
                         }

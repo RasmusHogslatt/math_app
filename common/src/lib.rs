@@ -1,17 +1,24 @@
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
-pub enum Course {
-    Addition(AdditionSettings),
-    Multiplication(MultiplicationSettings),
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LeaderboardEntry {
+    pub id: i32,
+    pub name: String,
+    pub course: String,
+    pub time_seconds: f64,
+    pub completed_at: Option<DateTime<Utc>>, // This is still optional as default value is handled in the database
 }
 
-#[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
-pub struct AdditionSettings {
-    pub max: u8,
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LeaderboardRequest {
+    pub course: String,
+    pub limit: Option<usize>,
 }
 
-#[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
-pub struct MultiplicationSettings {
-    pub table: u8,
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SubmitScoreRequest {
+    pub name: String,
+    pub course: String,
+    pub time_seconds: f64,
 }
