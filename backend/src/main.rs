@@ -122,108 +122,6 @@ async fn submit_score(
     }
 }
 
-// For server-side rendering, add an endpoint to get the HTML with leaderboard data
-async fn render_leaderboard(
-    db_pool: web::Data<PgPool>,
-    req: web::Query<LeaderboardRequest>,
-) -> impl Responder {
-    let limit = req.limit.unwrap_or(10);
-
-    let result = sqlx::query_as!(
-        LeaderboardEntry,
-        r#"
-        SELECT id, name, course, time_seconds, completed_at
-        FROM leaderboard
-        WHERE course = $1
-        ORDER BY time_seconds ASC
-        LIMIT $2
-        "#,
-        req.course,
-        limit as i64
-    )
-    .fetch_all(db_pool.get_ref())
-    .await;
-
-    match result {
-        Ok(entries) => {
-            // Generate HTML table for the leaderboard
-            let mut html = String::from(
-                r#"<!DOCTYPE html>
-                <html>
-                <head>
-                    <title>Math Quiz Leaderboard</title>
-                    <style>
-                        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
-                        table { width: 100%; border-collapse: collapse; }
-                        th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
-                        th { background-color: #f2f2f2; }
-                        .container { max-width: 800px; margin: 0 auto; }
-                        h1 { color: #333; }
-                    </style>
-                </head>
-                <body>
-                    <div class="container">
-                        <h1>Math Quiz Leaderboard</h1>
-                        <h2>"#,
-            );
-
-            html.push_str(&req.course);
-            html.push_str(
-                r#"</h2>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Rank</th>
-                                    <th>Name</th>
-                                    <th>Time (seconds)</th>
-                                    <th>Date</th>
-                                </tr>
-                            </thead>
-                            <tbody>"#,
-            );
-
-            for (index, entry) in entries.iter().enumerate() {
-                let date_display = entry
-                    .completed_at
-                    .map(|dt| dt.format("%Y-%m-%d %H:%M").to_string())
-                    .unwrap_or_else(|| String::from("N/A"));
-
-                html.push_str(&format!(
-                    r#"
-                    <tr>
-                        <td>{}</td>
-                        <td>{}</td>
-                        <td>{:.2}</td>
-                        <td>{}</td>
-                    </tr>
-                    "#,
-                    index + 1,
-                    entry.name,
-                    entry.time_seconds,
-                    date_display
-                ));
-            }
-
-            html.push_str(
-                r#"
-                            </tbody>
-                        </table>
-                    </div>
-                </body>
-                </html>"#,
-            );
-
-            HttpResponse::Ok()
-                .content_type("text/html; charset=utf-8")
-                .body(html)
-        }
-        Err(e) => {
-            eprintln!("Database error: {}", e);
-            HttpResponse::InternalServerError().body("Failed to fetch leaderboard")
-        }
-    }
-}
-
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     // Initialize the database
@@ -248,8 +146,6 @@ async fn main() -> std::io::Result<()> {
                     .route("/leaderboard", web::get().to(get_leaderboard))
                     .route("/submit", web::post().to(submit_score)),
             )
-            // Server-side rendered HTML endpoint
-            .route("/leaderboard", web::get().to(render_leaderboard))
     })
     .bind("127.0.0.1:8080")?
     .run()
