@@ -6,8 +6,6 @@ use components::Leaderboard;
 use gloo_timers::callback::Interval;
 use quiz::*;
 
-use rand::{Rng, rng};
-use std::fmt::{self, Display};
 use std::rc::Rc;
 use web_sys::console;
 use web_time::{Duration, Instant};
@@ -77,7 +75,7 @@ fn quiz_section(props: &QuizSectionProps) -> Html {
 
         Callback::from(move |e: SubmitEvent| {
             e.prevent_default();
-            let answer_value = (*answer).parse::<i32>().unwrap_or(0);
+            let answer_value = (*answer).clone();
             on_answer.emit(answer_value);
             answer.set(String::new());
             if let Some(input) = input_ref.cast::<web_sys::HtmlInputElement>() {
@@ -127,11 +125,11 @@ fn quiz_section(props: &QuizSectionProps) -> Html {
 
 #[derive(Properties, PartialEq)]
 struct QuizSectionProps {
-    pub question: Question,
+    pub question: MathQuestion,
     pub elapsed_time: Duration,
     pub current_question: usize,
     pub total_questions: usize,
-    pub on_answer: Callback<i32>,
+    pub on_answer: Callback<String>, // Changed from i32 to String
 }
 
 #[function_component(ResultSection)]
@@ -266,11 +264,13 @@ fn app() -> Html {
         let elapsed_time = elapsed_time.clone();
         let interval_ref = interval_ref.clone();
 
-        Callback::from(move |answer: i32| {
+        Callback::from(move |answer: String| {
+            // Changed from i32 to String
             let current_q = *current_question;
             let q = &(*questions)[current_q];
 
-            if answer == q.answer {
+            // Now using the check_answer method from the Question trait
+            if q.check_answer(&answer) {
                 if current_q + 1 >= total_questions {
                     if let Some(handle) = interval_ref.borrow_mut().take() {
                         handle.cancel();
@@ -324,9 +324,11 @@ fn app() -> Html {
         let current_question = current_question.clone();
         let elapsed_time = elapsed_time.clone();
 
-        use_effect_with((*course).clone(), move |current_course| {
+        use_effect_with((*course).clone(), move |_current_course| {
             // Check if the app state is not Selection AND the selected course is not NoCourse
-            if *app_state != AppState::Selection && *current_course != Quiz::NoCourse {
+            if *app_state != AppState::Selection
+            /* && *current_course != Quiz::NoCourse */
+            {
                 web_sys::console::log_1(
                     &"Course changed, resetting state and stopping timer.".into(),
                 );

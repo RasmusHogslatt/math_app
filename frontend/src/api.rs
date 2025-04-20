@@ -2,7 +2,6 @@ use common::{LeaderboardEntry, SubmitScoreRequest, config::API_BASE_URL};
 use gloo_net::http::Request;
 use serde::de::DeserializeOwned;
 use thiserror::Error;
-use wasm_bindgen::JsValue;
 
 #[derive(Error, Debug, Clone, PartialEq)]
 pub enum ApiError {
