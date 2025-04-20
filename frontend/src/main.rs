@@ -189,6 +189,11 @@ fn app() -> Html {
     let start_time = use_state(|| Instant::now());
     let elapsed_time = use_state(|| Duration::from_secs(0));
     let interval_ref = use_mut_ref(|| None::<Interval>);
+    /*  console::log_3(
+        &format!("start_time: {:#?}", *start_time).into(),
+        &format!("elapsed_time: {:#?}", *elapsed_time).into(),
+        &format!("interval_ref: {:#?}", interval_ref.borrow()).into(),
+    ); */
 
     // Total number of questions
     let total_questions = 3;
@@ -208,32 +213,54 @@ fn app() -> Html {
         let questions = questions.clone();
         let current_question = current_question.clone();
         let start_time = start_time.clone();
+        let start_time_handle = start_time.clone();
         let elapsed_time = elapsed_time.clone();
         let interval_ref = interval_ref.clone();
 
         Callback::from(move |_| {
             if *course != Quiz::NoCourse {
+                web_sys::console::log_1(
+                    &format!(
+                        "on_start_quiz START: elapsed_time BEFORE reset: {:?}",
+                        *elapsed_time
+                    )
+                    .into(),
+                );
                 // Generate questions based on selected course
                 let generated_questions = generate_questions(*course.clone(), total_questions);
                 questions.set(generated_questions);
                 current_question.set(0);
 
                 // Reset timer
-                let now = Instant::now();
-                start_time.set(now);
+                let quiz_start_instant = Instant::now(); // <<< Get the specific Instant value
+                start_time_handle.set(quiz_start_instant); // <<< Update the state using the handle
                 elapsed_time.set(Duration::from_secs(0));
 
-                // Start timer interval
+                web_sys::console::log_2(
+                    &format!(
+                        "on_start_quiz MID: start_time state set to: {:?}",
+                        quiz_start_instant
+                    )
+                    .into(),
+                    &format!(
+                        "on_start_quiz MID: elapsed_time reset to: {:?}",
+                        *elapsed_time
+                    )
+                    .into(),
+                );
+
+                // Start timer interval using the NEW start_time VALUE
                 let elapsed = elapsed_time.clone();
-                let start = start_time.clone();
+                //let start = start_time.clone(); // Use the updated start_time
+                // *** CAPTURE THE VALUE ***
                 let timer_interval = Interval::new(100, move || {
                     let now = Instant::now();
-                    let duration = now.duration_since(*start);
+                    // Use the captured 'quiz_start_instant' value directly
+                    let duration = now.duration_since(quiz_start_instant);
                     elapsed.set(duration);
                 });
-                interval_ref.borrow_mut().replace(timer_interval);
-
-                // Change state to Quiz
+                interval_ref.borrow_mut().replace(timer_interval); // Store the new interval handle
+                web_sys::console::log_1(&"on_start_quiz END: New timer created and stored.".into());
                 app_state.set(AppState::Quiz);
             }
         })
@@ -294,6 +321,13 @@ fn app() -> Html {
             questions.set(Vec::new());
             current_question.set(0);
             elapsed_time.set(Duration::from_secs(0));
+            web_sys::console::log_1(
+                &format!(
+                    "on_restart END: elapsed_time reset. Value is now: {:?}",
+                    *elapsed_time
+                )
+                .into(),
+            );
             app_state.set(AppState::Selection);
         })
     };
@@ -308,6 +342,41 @@ fn app() -> Html {
                 app_state.set(AppState::Selection);
             }
             || ()
+        });
+    }
+
+    // Effect to reset state and STOP TIMER if course changes during quiz/result
+    {
+        let course = course.clone();
+        let app_state = app_state.clone();
+        let interval_ref = interval_ref.clone(); // <<< Add interval_ref here
+        let questions = questions.clone(); // <<< Add other states to reset if needed
+        let current_question = current_question.clone(); // <<< Add
+        let elapsed_time = elapsed_time.clone(); // <<< Add
+
+        use_effect_with((*course).clone(), move |current_course| {
+            // Check if the app state is not Selection AND the selected course is not NoCourse
+            // This prevents resetting unnecessarily when first selecting a course from NoCourse
+            if *app_state != AppState::Selection && *current_course != Quiz::NoCourse {
+                web_sys::console::log_1(
+                    &"Course changed, resetting state and stopping timer.".into(),
+                ); // Debug log
+
+                // Stop the timer if it's running
+                if let Some(handle) = interval_ref.borrow_mut().take() {
+                    handle.cancel();
+                    web_sys::console::log_1(&"Timer stopped due to course change.".into());
+                }
+
+                // Reset other relevant states
+                questions.set(Vec::new());
+                current_question.set(0);
+                elapsed_time.set(Duration::from_secs(0)); // Reset elapsed time state
+
+                // Reset to selection state
+                app_state.set(AppState::Selection);
+            }
+            || () // Cleanup function (can be empty)
         });
     }
 
