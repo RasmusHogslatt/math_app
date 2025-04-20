@@ -8,6 +8,7 @@ pub enum Quiz {
     Addition,
     Subtraction,
     Multiplication,
+    SquareArea,
 }
 
 impl Display for Quiz {
@@ -17,6 +18,7 @@ impl Display for Quiz {
             Quiz::Addition => write!(f, "Addition"),
             Quiz::Subtraction => write!(f, "Subtraction"),
             Quiz::Multiplication => write!(f, "Multiplication"),
+            Quiz::SquareArea => write!(f, "Square Area"),
         }
     }
 }
@@ -30,6 +32,35 @@ impl std::str::FromStr for Quiz {
             "Subtraction" => Ok(Quiz::Subtraction),
             "Multiplication" => Ok(Quiz::Multiplication),
             _ => Ok(Quiz::NoCourse),
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum QuestionBox {
+    Math(MathQuestion),
+    Area(AreaQuestion),
+}
+
+impl Question for QuestionBox {
+    fn prompt(&self) -> String {
+        match self {
+            QuestionBox::Math(q) => q.prompt(),
+            QuestionBox::Area(q) => q.prompt(),
+        }
+    }
+
+    fn answer(&self) -> &str {
+        match self {
+            QuestionBox::Math(q) => q.answer(),
+            QuestionBox::Area(q) => q.answer(),
+        }
+    }
+
+    fn check_answer(&self, answer: &str) -> bool {
+        match self {
+            QuestionBox::Math(q) => q.check_answer(answer),
+            QuestionBox::Area(q) => q.check_answer(answer),
         }
     }
 }
@@ -63,6 +94,7 @@ impl MathQuestion {
             Quiz::Subtraction => first - second,
             Quiz::Multiplication => first * second,
             Quiz::NoCourse => 0, // Default case
+            Quiz::SquareArea => 0,
         };
 
         Self {
@@ -94,6 +126,7 @@ impl MathQuestion {
                 Self::new(a, b, operation)
             }
             Quiz::NoCourse => Self::new(0, 0, operation),
+            Quiz::SquareArea => Self::new(0, 0, operation),
         }
     }
 }
@@ -107,7 +140,47 @@ impl Question for MathQuestion {
                 format!("What is {} × {}?", self.first_number, self.second_number)
             }
             Quiz::NoCourse => "No question available".to_string(),
+            Quiz::SquareArea => "Not applicable".to_string(),
         }
+    }
+
+    fn answer(&self) -> &str {
+        &self.answer_text
+    }
+}
+// Square area question implementation
+#[derive(Clone, Debug, PartialEq)]
+pub struct AreaQuestion {
+    side_length: u32,
+    unit: String,
+    answer_text: String,
+}
+
+impl AreaQuestion {
+    pub fn new(side: u32, unit: &str) -> Self {
+        let area = side * side;
+        Self {
+            side_length: side,
+            unit: unit.to_string(),
+            answer_text: area.to_string(),
+        }
+    }
+
+    pub fn random() -> Self {
+        let mut rng = rand::rng();
+        let side = rng.random_range(1..20);
+        let units = ["centimeters", "meters", "inches"];
+        let unit = units[rng.random_range(0..units.len())];
+        Self::new(side, unit)
+    }
+}
+
+impl Question for AreaQuestion {
+    fn prompt(&self) -> String {
+        format!(
+            "What is the area of a square with sides of {} {}?",
+            self.side_length, self.unit
+        )
     }
 
     fn answer(&self) -> &str {
@@ -116,11 +189,19 @@ impl Question for MathQuestion {
 }
 
 // Function to generate questions based on quiz type
-pub fn generate_questions(quiz_type: Quiz, count: usize) -> Vec<MathQuestion> {
+pub fn generate_questions(quiz_type: Quiz, count: usize) -> Vec<QuestionBox> {
     let mut questions = Vec::with_capacity(count);
 
     for _ in 0..count {
-        questions.push(MathQuestion::random(quiz_type));
+        let question = match quiz_type {
+            Quiz::Addition | Quiz::Subtraction | Quiz::Multiplication => {
+                QuestionBox::Math(MathQuestion::random(quiz_type))
+            }
+            Quiz::SquareArea => QuestionBox::Area(AreaQuestion::random()),
+            Quiz::NoCourse => QuestionBox::Math(MathQuestion::new(0, 0, Quiz::NoCourse)),
+        };
+
+        questions.push(question);
     }
 
     questions

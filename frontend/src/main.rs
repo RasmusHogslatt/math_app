@@ -109,12 +109,11 @@ fn quiz_section(props: &QuizSectionProps) -> Html {
                 <h2>{props.question.display()}</h2>
                 <form onsubmit={on_submit}>
                     <input
-                        type="number"
+                        type="text" // Changed from "number" to "text" to support fraction answers
                         ref={input_ref}
                         value={(*answer).clone()}
                         oninput={on_input}
                         placeholder="Enter your answer"
-                       // autoFocus=true
                     />
                     <button type="submit">{"Submit"}</button>
                 </form>
@@ -125,11 +124,11 @@ fn quiz_section(props: &QuizSectionProps) -> Html {
 
 #[derive(Properties, PartialEq)]
 struct QuizSectionProps {
-    pub question: MathQuestion,
+    pub question: QuestionBox,
     pub elapsed_time: Duration,
     pub current_question: usize,
     pub total_questions: usize,
-    pub on_answer: Callback<String>, // Changed from i32 to String
+    pub on_answer: Callback<String>,
 }
 
 #[function_component(ResultSection)]
@@ -178,6 +177,7 @@ fn app() -> Html {
         Quiz::Addition,
         Quiz::Subtraction,
         Quiz::Multiplication,
+        Quiz::SquareArea,
     ]);
 
     let course = use_state(|| Quiz::NoCourse);
@@ -265,11 +265,10 @@ fn app() -> Html {
         let interval_ref = interval_ref.clone();
 
         Callback::from(move |answer: String| {
-            // Changed from i32 to String
             let current_q = *current_question;
             let q = &(*questions)[current_q];
 
-            // Now using the check_answer method from the Question trait
+            // Use the Question trait check_answer method
             if q.check_answer(&answer) {
                 if current_q + 1 >= total_questions {
                     if let Some(handle) = interval_ref.borrow_mut().take() {
