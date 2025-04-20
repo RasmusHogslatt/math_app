@@ -189,11 +189,6 @@ fn app() -> Html {
     let start_time = use_state(|| Instant::now());
     let elapsed_time = use_state(|| Duration::from_secs(0));
     let interval_ref = use_mut_ref(|| None::<Interval>);
-    /*  console::log_3(
-        &format!("start_time: {:#?}", *start_time).into(),
-        &format!("elapsed_time: {:#?}", *elapsed_time).into(),
-        &format!("interval_ref: {:#?}", interval_ref.borrow()).into(),
-    ); */
 
     // Total number of questions
     let total_questions = 3;
@@ -226,14 +221,15 @@ fn app() -> Html {
                     )
                     .into(),
                 );
+
                 // Generate questions based on selected course
                 let generated_questions = generate_questions(*course.clone(), total_questions);
                 questions.set(generated_questions);
                 current_question.set(0);
 
                 // Reset timer
-                let quiz_start_instant = Instant::now(); // <<< Get the specific Instant value
-                start_time_handle.set(quiz_start_instant); // <<< Update the state using the handle
+                let quiz_start_instant = Instant::now();
+                start_time_handle.set(quiz_start_instant);
                 elapsed_time.set(Duration::from_secs(0));
 
                 web_sys::console::log_2(
@@ -249,24 +245,20 @@ fn app() -> Html {
                     .into(),
                 );
 
-                // Start timer interval using the NEW start_time VALUE
+                // Start timer interval
                 let elapsed = elapsed_time.clone();
-                //let start = start_time.clone(); // Use the updated start_time
-                // *** CAPTURE THE VALUE ***
                 let timer_interval = Interval::new(100, move || {
                     let now = Instant::now();
-                    // Use the captured 'quiz_start_instant' value directly
                     let duration = now.duration_since(quiz_start_instant);
                     elapsed.set(duration);
                 });
-                interval_ref.borrow_mut().replace(timer_interval); // Store the new interval handle
+                interval_ref.borrow_mut().replace(timer_interval);
                 web_sys::console::log_1(&"on_start_quiz END: New timer created and stored.".into());
                 app_state.set(AppState::Quiz);
             }
         })
     };
 
-    // Answer submission handler
     let on_answer = {
         let questions = questions.clone();
         let current_question = current_question.clone();
@@ -278,24 +270,16 @@ fn app() -> Html {
             let current_q = *current_question;
             let q = &(*questions)[current_q];
 
-            // Check if answer is correct
             if answer == q.answer {
-                // If this is the last question
                 if current_q + 1 >= total_questions {
-                    // Stop timer
                     if let Some(handle) = interval_ref.borrow_mut().take() {
                         handle.cancel();
                     }
-                    // Show success result
-                    app_state.set(AppState::Result(true, *elapsed_time));
-                    // Show success result
                     app_state.set(AppState::Result(true, *elapsed_time));
                 } else {
-                    // Move to next question
                     current_question.set(current_q + 1);
                 }
             } else {
-                // Wrong answer - stop timer and show failure
                 if let Some(handle) = interval_ref.borrow_mut().take() {
                     handle.cancel();
                 }
@@ -304,7 +288,6 @@ fn app() -> Html {
         })
     };
 
-    // Restart handler
     let on_restart = {
         let app_state = app_state.clone();
         let interval_ref = interval_ref.clone();
@@ -332,35 +315,21 @@ fn app() -> Html {
         })
     };
 
-    {
-        let course = course.clone();
-        let app_state = app_state.clone();
-
-        use_effect_with((*course).clone(), move |current_course| {
-            // Reset to selection state if course changes
-            if *current_course != Quiz::NoCourse && *app_state != AppState::Selection {
-                app_state.set(AppState::Selection);
-            }
-            || ()
-        });
-    }
-
     // Effect to reset state and STOP TIMER if course changes during quiz/result
     {
         let course = course.clone();
         let app_state = app_state.clone();
-        let interval_ref = interval_ref.clone(); // <<< Add interval_ref here
-        let questions = questions.clone(); // <<< Add other states to reset if needed
-        let current_question = current_question.clone(); // <<< Add
-        let elapsed_time = elapsed_time.clone(); // <<< Add
+        let interval_ref = interval_ref.clone();
+        let questions = questions.clone();
+        let current_question = current_question.clone();
+        let elapsed_time = elapsed_time.clone();
 
         use_effect_with((*course).clone(), move |current_course| {
             // Check if the app state is not Selection AND the selected course is not NoCourse
-            // This prevents resetting unnecessarily when first selecting a course from NoCourse
             if *app_state != AppState::Selection && *current_course != Quiz::NoCourse {
                 web_sys::console::log_1(
                     &"Course changed, resetting state and stopping timer.".into(),
-                ); // Debug log
+                );
 
                 // Stop the timer if it's running
                 if let Some(handle) = interval_ref.borrow_mut().take() {
@@ -374,9 +343,9 @@ fn app() -> Html {
                 elapsed_time.set(Duration::from_secs(0)); // Reset elapsed time state
 
                 // Reset to selection state
-                app_state.set(AppState::Selection);
+                app_state.set(AppState::Selection); // This covers the first hook's action
             }
-            || () // Cleanup function (can be empty)
+            || ()
         });
     }
 
@@ -386,18 +355,7 @@ fn app() -> Html {
         AppState::Result(true, time_taken) => Some(time_taken.as_secs_f64()),
         _ => None,
     };
-    // Determine if a score should be submitted (only when in Result state with passing score)
-    /*   let show_submit = match *app_state {
-        AppState::Result(passed, _) => passed,
-        _ => false,
-    }; */
 
-    // Get the current time for submission (only when in Result state)
-    /*   let user_time = match *app_state {
-           AppState::Result(passed, time_taken) if passed => Some(time_taken.as_secs_f64()),
-           _ => None,
-       };
-    */
     html! {
         <div class="app-container">
             <div class="sidebar">
