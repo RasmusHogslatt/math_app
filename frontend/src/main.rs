@@ -340,10 +340,10 @@ fn app() -> Html {
                 // Reset other relevant states
                 questions.set(Vec::new());
                 current_question.set(0);
-                elapsed_time.set(Duration::from_secs(0)); // Reset elapsed time state
+                elapsed_time.set(Duration::from_secs(0));
 
                 // Reset to selection state
-                app_state.set(AppState::Selection); // This covers the first hook's action
+                app_state.set(AppState::Selection);
             }
             || ()
         });
