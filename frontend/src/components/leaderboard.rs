@@ -1,135 +1,82 @@
 // frontend/src/components/leaderboard.rs
+use crate::api::{self, ApiError}; // Import the api module and error type
 use common::{LeaderboardEntry, SubmitScoreRequest};
-use gloo_net::http::Request;
 use wasm_bindgen_futures::spawn_local;
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
 
-// Backend API base URL
-const API_BASE_URL: &str = "http://127.0.0.1:8080";
+// Define state enums for clarity
+#[derive(Clone, PartialEq)]
+enum FetchState {
+    Idle,
+    Loading,
+    Success(Vec<LeaderboardEntry>),
+    Error(String),
+}
+
+#[derive(Clone, PartialEq, Debug)]
+enum SubmitState {
+    Idle, // Can submit
+    Submitting,
+    Success(String),  // Success message
+    Error(String),    // Error message
+    AlreadySubmitted, // Special case for 409 or if submitted flag is true
+}
 
 #[derive(Properties, PartialEq)]
 pub struct LeaderboardProps {
     pub course: String,
-    pub show_submit: bool,
+    // If true, allow showing the submit form IF user_time is Some
+    pub allow_submission: bool,
     pub user_time: Option<f64>,
+    // No longer need on_reset_timer from parent
 }
 
 #[function_component(Leaderboard)]
 pub fn leaderboard(props: &LeaderboardProps) -> Html {
-    let entries = use_state(|| Vec::<LeaderboardEntry>::new());
-    let loading = use_state(|| true);
-    let error = use_state(|| None::<String>);
-    let player_name = use_state(|| String::new());
-    let submit_status = use_state(|| None::<String>);
-    let submitted = use_state(|| false);
-    let submitting = use_state(|| false);
+    let fetch_state = use_state(|| FetchState::Idle);
+    let player_name = use_state(String::new);
+    let submit_state = use_state(|| SubmitState::Idle);
 
-    // Fetch leaderboard data when component mounts or course changes
+    // Effect for fetching leaderboard data
     {
-        let entries = entries.clone();
-        let loading = loading.clone();
-        let error = error.clone();
+        let fetch_state = fetch_state.clone();
         let course = props.course.clone();
 
         use_effect_with(props.course.clone(), move |_| {
-            loading.set(true);
-            error.set(None);
-
-            spawn_local(async move {
-                match Request::get(&format!(
-                    "{}/api/leaderboard?course={}",
-                    API_BASE_URL, course
-                ))
-                .send()
-                .await
-                {
-                    Ok(response) => {
-                        if response.status() == 200 {
-                            match response.json::<Vec<LeaderboardEntry>>().await {
-                                Ok(data) => {
-                                    entries.set(data);
-                                    loading.set(false);
-                                }
-                                Err(e) => {
-                                    error.set(Some(format!("Failed to parse response: {}", e)));
-                                    loading.set(false);
-                                }
-                            }
-                        } else {
-                            error.set(Some(format!("Server error: {}", response.status())));
-                            loading.set(false);
+            if course == "No Course" {
+                fetch_state.set(FetchState::Success(Vec::new())); // Don't fetch for "No Course"
+            } else {
+                fetch_state.set(FetchState::Loading);
+                spawn_local(async move {
+                    match api::fetch_leaderboard(&course).await {
+                        Ok(data) => fetch_state.set(FetchState::Success(data)),
+                        Err(e) => {
+                            fetch_state.set(FetchState::Error(format!("Failed to load: {}", e)))
                         }
                     }
-                    Err(e) => {
-                        error.set(Some(format!("Network error: {}", e)));
-                        loading.set(false);
-                    }
-                }
-            });
-
-            || ()
-        });
-    }
-
-    // Inside the Leaderboard component in leaderboard.rs
-
-    // Add this useEffect to reset form states when the course changes
-    {
-        let player_name = player_name.clone();
-        let submit_status = submit_status.clone();
-        let submitted = submitted.clone();
-        let submitting = submitting.clone();
-
-        use_effect_with(props.course.clone(), move |_| {
-            player_name.set(String::new());
-            submit_status.set(None);
-            submitted.set(false);
-            submitting.set(false);
-            || ()
-        });
-    }
-
-    // In leaderboard.rs, inside the Leaderboard component
-    // Add this effect to reset submission states when course changes
-    {
-        let submitted = submitted.clone();
-        let player_name = player_name.clone();
-        let submit_status = submit_status.clone();
-        let submitting = submitting.clone();
-
-        use_effect_with(props.course.clone(), move |_| {
-            // Reset all submission-related states
-            submitted.set(false);
-            player_name.set(String::new());
-            submit_status.set(None);
-            submitting.set(false);
-
-            || ()
-        });
-    }
-
-    // In leaderboard.rs - add this effect
-    {
-        let submitted = submitted.clone();
-        let submitting = submitting.clone();
-        let player_name = player_name.clone();
-        let submit_status = submit_status.clone();
-        let user_time = props.user_time;
-
-        use_effect_with(user_time, move |_| {
-            // Reset submission states when new user_time arrives
-            if user_time.is_some() {
-                submitted.set(false);
-                submitting.set(false);
-                player_name.set(String::new());
-                submit_status.set(None);
+                });
             }
+
+            || () // Using the same closure type for both paths
+        });
+    }
+
+    // Effect for resetting submission state when course or user_time changes
+    {
+        let player_name = player_name.clone();
+        let submit_state = submit_state.clone();
+        let user_time = props.user_time; // Capture user_time for comparison
+
+        use_effect_with((props.course.clone(), user_time), move |_| {
+            // Reset submission state if course changes OR if a new time is available
+            player_name.set(String::new());
+            submit_state.set(SubmitState::Idle);
             || ()
         });
     }
 
-    let on_name_change = {
+    let handle_name_change = {
         let player_name = player_name.clone();
         Callback::from(move |e: InputEvent| {
             let input: HtmlInputElement = e.target_unchecked_into();
@@ -137,159 +84,163 @@ pub fn leaderboard(props: &LeaderboardProps) -> Html {
         })
     };
 
-    let on_submit_score = {
-        // outer clones (make the closure Fn, not FnOnce)
+    // Extracted function to refresh leaderboard after submission
+    let refresh_leaderboard = {
+        let fetch_state = fetch_state.clone();
+        let course = props.course.clone();
+        Callback::from(move |_| {
+            if course != "No Course" {
+                let fetch_state = fetch_state.clone();
+                let course = course.clone();
+                fetch_state.set(FetchState::Loading); // Optionally show loading during refresh
+                spawn_local(async move {
+                    match api::fetch_leaderboard(&course).await {
+                        Ok(data) => fetch_state.set(FetchState::Success(data)),
+                        Err(e) => {
+                            fetch_state.set(FetchState::Error(format!("Failed to refresh: {}", e)))
+                        } // Or just keep old data on refresh error
+                    }
+                });
+            }
+        })
+    };
+
+    let handle_submit = {
         let player_name = player_name.clone();
-        let submit_status = submit_status.clone();
-        let entries = entries.clone();
+        let submit_state = submit_state.clone();
         let course = props.course.clone();
         let user_time = props.user_time;
-        let submitting = submitting.clone();
-        let submitted = submitted.clone();
-        let current_course = props.course.clone();
+        let refresh_leaderboard = refresh_leaderboard.clone();
 
         Callback::from(move |e: SubmitEvent| {
             e.prevent_default();
-            // Add course validation check
-            if course != current_course {
-                submit_status.set(Some("Course changed - submission cancelled".into()));
-                return;
-            }
-            // prevent double‐click
-            if *submitting || *submitted {
-                return;
-            }
-            submitting.set(true);
 
-            // validate
+            // Prevent submission if already submitting or successful/already submitted
+            if !matches!(*submit_state, SubmitState::Idle) {
+                return;
+            }
+
             let name = (*player_name).trim().to_string();
             if name.is_empty() {
-                submit_status.set(Some("Please enter your name".into()));
-                submitting.set(false);
+                submit_state.set(SubmitState::Error("Please enter your name".into()));
                 return;
             }
-            let time = if let Some(t) = user_time {
-                t
-            } else {
-                submit_status.set(Some("No valid time to submit".into()));
-                submitting.set(false);
-                return;
+            let time = match user_time {
+                Some(t) => t,
+                None => {
+                    // This case should ideally not happen if the form isn't shown
+                    submit_state.set(SubmitState::Error("No valid time to submit".into()));
+                    return;
+                }
             };
 
-            submit_status.set(Some("Submitting…".into()));
+            submit_state.set(SubmitState::Submitting);
 
-            // clones for async block
-            let submit_status = submit_status.clone();
-            let entries = entries.clone();
-            let course = course.clone();
-            let name = name.clone();
-            let submitting = submitting.clone();
-            let submitted = submitted.clone();
+            let req = SubmitScoreRequest {
+                name: name.clone(),
+                course: course.clone(),
+                time_seconds: time,
+            };
+
+            let submit_state = submit_state.clone(); // Clone for async block
+            let refresh_leaderboard = refresh_leaderboard.clone(); // Clone for async block
 
             spawn_local(async move {
-                let req = SubmitScoreRequest {
-                    name,
-                    course: course.clone(),
-                    time_seconds: time,
-                };
-
-                let resp = Request::post(&format!("{}/api/submit", API_BASE_URL))
-                    .json(&req)
-                    .unwrap()
-                    .send()
-                    .await;
-
-                match resp {
-                    Ok(r) if r.status() == 201 => {
-                        submit_status.set(Some("Score submitted!".into()));
-                        submitted.set(true);
+                match api::submit_score(&req).await {
+                    Ok(()) => {
+                        submit_state.set(SubmitState::Success("Score submitted!".into()));
+                        refresh_leaderboard.emit(()); // Refresh leaderboard on success
                     }
-                    Ok(r) if r.status() == 409 => {
-                        submit_status.set(Some("You already submitted that score.".into()));
-                        submitted.set(true);
+                    Err(ApiError::Conflict(_)) => {
+                        submit_state.set(SubmitState::AlreadySubmitted);
+                        refresh_leaderboard.emit(()); // Refresh anyway, maybe data changed
                     }
-                    Ok(r) => {
-                        submit_status.set(Some(format!("Error: {}", r.status())));
-                    }
-                    Err(err) => {
-                        submit_status.set(Some(format!("Network error: {}", err)));
+                    Err(e) => {
+                        submit_state.set(SubmitState::Error(format!("Submission failed: {}", e)));
+                        // Don't reset to Idle here, keep error shown until user interaction
                     }
                 }
-
-                // regardless of 201 or 409, we can refresh the leaderboard
-                if let Ok(lb) = Request::get(&format!(
-                    "{}/api/leaderboard?course={}",
-                    API_BASE_URL, course
-                ))
-                .send()
-                .await
-                {
-                    if let Ok(data) = lb.json::<Vec<LeaderboardEntry>>().await {
-                        entries.set(data);
-                    }
-                }
-
-                submitting.set(false);
             });
         })
     };
+
+    // Determine if the submit form should be visible
+    let show_submit_form = props.allow_submission
+        && props.user_time.is_some()
+        && !matches!(
+            *submit_state,
+            SubmitState::Success(_) | SubmitState::AlreadySubmitted
+        );
 
     html! {
         <div class="leaderboard-container">
             <h2>{format!("{} Leaderboard", props.course)}</h2>
 
             // Submit score form
-            if props.show_submit && props.user_time.is_some() && !*submitted {
+            if show_submit_form {
                 <div class="submit-score">
                     <h3>{"Submit Your Score"}</h3>
-                    <p>{format!("Your time: {:.2} seconds", props.user_time.unwrap())}</p>
-                    <form onsubmit={on_submit_score}>
+                    <p>{format!("Your time: {:.2} seconds", props.user_time.unwrap_or(0.0))}</p>
+                    <form onsubmit={handle_submit}>
                         <input
                             type="text"
                             placeholder="Enter your name"
                             value={(*player_name).clone()}
-                            oninput={on_name_change}
+                            oninput={handle_name_change}
+                            disabled={*submit_state == SubmitState::Submitting}
                         />
-                        <button type="submit">{"Submit Score"}</button>
+                        <button type="submit" disabled={*submit_state == SubmitState::Submitting}>
+                            { if *submit_state == SubmitState::Submitting { "Submitting..." } else { "Submit Score" } }
+                        </button>
                     </form>
-                    if let Some(status) = (*submit_status).clone() {
-                        <p class="status-message">{status}</p>
+                    {
+                        match &*submit_state {
+                            SubmitState::Error(msg) => html!{<p class="status-message error">{msg}</p>},
+                            // Don't show idle/submitting messages, handled by button text/state
+                            _ => html!{}
+                        }
                     }
                 </div>
+            } else if let SubmitState::Success(msg) = &*submit_state {
+                // Show success message if form is hidden after success
+                <p class="status-message success">{msg}</p>
+            } else if let SubmitState::AlreadySubmitted = *submit_state {
+                // Show already submitted message
+                <p class="status-message success">{"Score already submitted."}</p>
             }
 
             // Leaderboard table
-            if *loading {
-                <p>{"Loading leaderboard..."}</p>
-            } else if let Some(err) = (*error).clone() {
-                <p class="error">{format!("Error loading leaderboard: {}", err)}</p>
-            } else if (*entries).is_empty() {
-                <p>{"No scores yet. Be the first to submit!"}</p>
-            } else {
-                <table class="leaderboard-table">
-                    <thead>
-                        <tr>
-                            <th>{"Rank"}</th>
-                            <th>{"Name"}</th>
-                            <th>{"Time (seconds)"}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {
-                            (*entries).iter().enumerate().map(|(index, entry)| {
-                                html! {
-                                    <tr>
-                                        <td>{index + 1}</td>
-                                        <td>{&entry.name}</td>
-                                        <td>{format!("{:.2}", entry.time_seconds)}</td>
-                                    </tr>
+            {
+                match &*fetch_state {
+                    FetchState::Idle | FetchState::Loading => html!{ <p>{"Loading leaderboard..."}</p> },
+                    FetchState::Error(err) => html!{ <p class="error">{format!("Error loading leaderboard: {}", err)}</p> },
+                    FetchState::Success(entries) if entries.is_empty() => html!{ <p>{"No scores yet. Be the first to submit!"}</p> },
+                    FetchState::Success(entries) => html! {
+                        <table class="leaderboard-table">
+                            <thead>
+                                <tr>
+                                    <th>{"Rank"}</th>
+                                    <th>{"Name"}</th>
+                                    <th>{"Time (seconds)"}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {
+                                    entries.iter().enumerate().map(|(index, entry)| {
+                                        html! {
+                                            <tr key={entry.id}> // Add a key for performance
+                                                <td>{index + 1}</td>
+                                                <td>{&entry.name}</td>
+                                                <td>{format!("{:.2}", entry.time_seconds)}</td>
+                                            </tr>
+                                        }
+                                    }).collect::<Html>()
                                 }
-                            }).collect::<Html>()
-                        }
-                    </tbody>
-                </table>
+                            </tbody>
+                        </table>
+                    }
+                }
             }
-
         </div>
     }
 }

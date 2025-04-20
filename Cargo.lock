@@ -758,6 +758,8 @@ dependencies = [
  "gloo-net 0.2.6",
  "gloo-timers 0.3.0",
  "rand 0.9.1",
+ "serde",
+ "thiserror",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",

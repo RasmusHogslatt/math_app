@@ -1,7 +1,8 @@
+pub mod config;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct LeaderboardEntry {
     pub id: i32,
     pub name: String,

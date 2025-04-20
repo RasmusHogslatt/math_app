@@ -1,6 +1,10 @@
+mod api;
 mod components;
+mod quiz;
+
 use components::Leaderboard;
 use gloo_timers::callback::Interval;
+use quiz::*;
 
 use rand::{Rng, rng};
 use std::fmt::{self, Display};
@@ -10,55 +14,6 @@ use web_time::{Duration, Instant};
 use yew::functional::*;
 use yew::prelude::*;
 
-// Quiz enum definition
-#[derive(Clone, PartialEq, Debug, Copy)]
-enum Quiz {
-    NoCourse,
-    Addition,
-    Subtraction,
-    Multiplication,
-}
-
-// Implement Display for converting enum variants to strings
-impl Display for Quiz {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Quiz::NoCourse => write!(f, "No Course"),
-            Quiz::Addition => write!(f, "Addition"),
-            Quiz::Subtraction => write!(f, "Subtraction"),
-            Quiz::Multiplication => write!(f, "Multiplication"),
-        }
-    }
-}
-
-// Structure to represent a quiz question
-#[derive(Clone, PartialEq)]
-struct Question {
-    first_operand: i32,
-    second_operand: i32,
-    operator: String,
-    answer: i32,
-}
-
-impl Question {
-    fn new(first: i32, second: i32, op: &str, ans: i32) -> Self {
-        Question {
-            first_operand: first,
-            second_operand: second,
-            operator: op.to_string(),
-            answer: ans,
-        }
-    }
-
-    fn display(&self) -> String {
-        format!(
-            "{} {} {} = ?",
-            self.first_operand, self.operator, self.second_operand
-        )
-    }
-}
-
-// Enum for application state
 #[derive(Clone, PartialEq)]
 enum AppState {
     Selection,
@@ -343,7 +298,6 @@ fn app() -> Html {
         })
     };
 
-    // In App component (main.rs), add this effect
     {
         let course = course.clone();
         let app_state = app_state.clone();
@@ -357,18 +311,24 @@ fn app() -> Html {
         });
     }
 
-    // Determine if a score should be submitted (only when in Result state with passing score)
-    let show_submit = match *app_state {
-        AppState::Result(passed, _) => passed,
-        _ => false,
-    };
+    let allow_submission = matches!(*app_state, AppState::Result(true, _));
 
-    // Get the current time for submission (only when in Result state)
-    let user_time = match *app_state {
-        AppState::Result(passed, time_taken) if passed => Some(time_taken.as_secs_f64()),
+    let current_user_time = match *app_state {
+        AppState::Result(true, time_taken) => Some(time_taken.as_secs_f64()),
         _ => None,
     };
+    // Determine if a score should be submitted (only when in Result state with passing score)
+    /*   let show_submit = match *app_state {
+        AppState::Result(passed, _) => passed,
+        _ => false,
+    }; */
 
+    // Get the current time for submission (only when in Result state)
+    /*   let user_time = match *app_state {
+           AppState::Result(passed, time_taken) if passed => Some(time_taken.as_secs_f64()),
+           _ => None,
+       };
+    */
     html! {
         <div class="app-container">
             <div class="sidebar">
@@ -422,49 +382,15 @@ fn app() -> Html {
                 }
             </div>
             <div class="leaderboard-panel">
-                <Leaderboard
-                    course={(*course).to_string()}
-                    show_submit={show_submit}
-                    user_time={user_time}
-                />
-            </div>
+            <Leaderboard
+               course={(*course).to_string()} // Convert Quiz enum to String for the prop
+               allow_submission={allow_submission}
+               user_time={current_user_time}
+               // on_reset_timer is removed
+           />
+       </div>
         </div>
     }
-}
-
-// Function to generate quiz questions based on the selected course
-fn generate_questions(course: Quiz, count: usize) -> Vec<Question> {
-    let mut rng = rng();
-    let mut questions = Vec::with_capacity(count);
-
-    match course {
-        Quiz::Addition => {
-            for _ in 0..count {
-                let a = rng.random_range(1..=5);
-                let b = rng.random_range(1..=5);
-                questions.push(Question::new(a, b, "+", a + b));
-            }
-        }
-        Quiz::Subtraction => {
-            for _ in 0..count {
-                let a = rng.random_range(10..=100);
-                let b = rng.random_range(1..=a); // Ensure b is not greater than a
-                questions.push(Question::new(a, b, "-", a - b));
-            }
-        }
-        Quiz::Multiplication => {
-            for _ in 0..count {
-                let a = rng.random_range(1..=12);
-                let b = rng.random_range(1..=12);
-                questions.push(Question::new(a, b, "*", a * b));
-            }
-        }
-        Quiz::NoCourse => {
-            // Return empty questions if no course is selected
-        }
-    }
-
-    questions
 }
 
 fn main() {

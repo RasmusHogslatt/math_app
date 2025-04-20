@@ -15,3 +15,5 @@ getrandom = { version = "0.3", features = ["wasm_js"] }
 rand = "0.9.1"
 gloo-timers = "0.3.0"
 web-time = "1.1.0"
+serde = { version = "1.0", features = ["derive"] }
+thiserror = "1.0"
