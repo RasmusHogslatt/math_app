@@ -1,8 +1,10 @@
 // backend/src/main.rs
 use actix_cors::Cors;
 use actix_web::{App, HttpResponse, HttpServer, Responder, web};
-use common::{LeaderboardEntry, LeaderboardRequest, SubmitScoreRequest};
-use sqlx::{PgPool, postgres::PgPoolOptions};
+use common::{
+    LeaderboardEntry, LeaderboardRequest, SubmitScoreRequest, config::MAX_ENTRIES_PER_COURSE,
+};
+use sqlx::{PgPool, postgres::PgPoolOptions, types::chrono::Utc};
 use std::env;
 
 // Database connection setup
@@ -36,6 +38,16 @@ async fn setup_database() -> PgPool {
     .await
     .expect("Failed to create leaderboard table");
 
+    // Create index for faster lookups per course
+    sqlx::query(
+        r#"
+        CREATE INDEX IF NOT EXISTS idx_leaderboard_course_time ON leaderboard (course, time_seconds ASC, completed_At DESC);
+        "#,
+    )
+    .execute(&pool)
+    .await
+    .expect("Failed to create index on course");
+
     // Fix any existing NULL values in the table
     sqlx::query(
         r#"
@@ -44,6 +56,7 @@ async fn setup_database() -> PgPool {
             name         = COALESCE(name,         'Anonymous'),
             course       = COALESCE(course,       'default'),
             completed_at = COALESCE(completed_at, NOW())
+            WHERE name IS NULL OR course IS NULL OR completed_at IS NULL
         "#,
     )
     .execute(&pool)
@@ -58,8 +71,6 @@ async fn get_leaderboard(
     db_pool: web::Data<PgPool>,
     req: web::Query<LeaderboardRequest>,
 ) -> impl Responder {
-    let limit = req.limit.unwrap_or(10);
-
     let result = sqlx::query_as!(
         LeaderboardEntry,
         r#"
@@ -70,7 +81,7 @@ async fn get_leaderboard(
         LIMIT $2
         "#,
         req.course,
-        limit as i64
+        MAX_ENTRIES_PER_COURSE as i64
     )
     .fetch_all(db_pool.get_ref())
     .await;
@@ -92,32 +103,76 @@ async fn submit_score(
     let name = if score.name.is_empty() {
         "Anonymous".to_string()
     } else {
-        score.name.clone()
+        score.name.trim().to_string()
     };
     let course = if score.course.is_empty() {
         "default".to_string()
     } else {
-        score.course.clone()
+        score.course.trim().to_lowercase().to_string()
     };
 
-    let result = sqlx::query!(
+    // Start transaction to ensure atomicity
+    let mut tx = match db_pool.begin().await {
+        Ok(tx) => tx,
+        Err(e) => {
+            eprintln!("Failed to start transaction: {}", e);
+            return HttpResponse::InternalServerError().json("Failed to start transaction");
+        }
+    };
+
+    // Insert new score
+    let insert_result = sqlx::query!(
         r#"
-        INSERT INTO leaderboard (name, course, time_seconds)
-        VALUES ($1, $2, $3)
+        INSERT INTO leaderboard (name, course, time_seconds, completed_at)
+        VALUES ($1, $2, $3, $4)
         RETURNING id
         "#,
         name,
         course,
-        score.time_seconds
+        score.time_seconds,
+        Utc::now()
     )
-    .fetch_one(db_pool.get_ref())
+    .fetch_one(&mut *tx)
     .await;
 
-    match result {
-        Ok(record) => HttpResponse::Created().json(record.id),
+    let new_id = match insert_result {
+        Ok(record) => record.id,
         Err(e) => {
-            eprintln!("Database error: {}", e);
-            HttpResponse::InternalServerError().json("Failed to save score")
+            eprintln!("Database error inserting score: {}", e);
+            // Rollback is implicit when tx goes out of scope without commit
+            return HttpResponse::InternalServerError().json("Failed to save score");
+        }
+    };
+
+    let delete_result = sqlx::query!(
+        r#"
+        DELETE FROM leaderboard
+        WHERE course = $1 AND id NOT IN (
+            SELECT id
+            FROM leaderboard
+            WHERE course = $1
+            ORDER BY time_seconds ASC, completed_at ASC -- Tie-breaker is crucial!
+            LIMIT $2
+        )
+        "#,
+        course,
+        MAX_ENTRIES_PER_COURSE
+    )
+    .execute(&mut *tx) // Use the transaction
+    .await;
+
+    if let Err(e) = delete_result {
+        eprintln!("Database error cleaning up leaderboard: {}", e);
+        // Rollback is implicit when tx goes out of scope without commit
+        return HttpResponse::InternalServerError().json("Failed to update leaderboard ranking");
+    }
+
+    // Commit the transaction
+    match tx.commit().await {
+        Ok(_) => HttpResponse::Created().json(serde_json::json!({ "id": new_id })),
+        Err(e) => {
+            eprintln!("Database error committing transaction: {}", e);
+            HttpResponse::InternalServerError().json("Failed to finalize score submission")
         }
     }
 }

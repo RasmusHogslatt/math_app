@@ -66,7 +66,11 @@ async fn handle_submit_response(response: gloo_net::http::Response) -> Result<()
 }
 
 pub async fn fetch_leaderboard(course: &str) -> Result<Vec<LeaderboardEntry>, ApiError> {
-    let url = format!("{}/api/leaderboard?course={}", API_BASE_URL, course);
+    let url = format!(
+        "{}/api/leaderboard?course={}",
+        API_BASE_URL,
+        course.trim().to_lowercase()
+    );
     let response = Request::get(&url).send().await?; // Propagates ApiError::Network
 
     handle_response(response).await
