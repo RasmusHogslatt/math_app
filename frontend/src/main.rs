@@ -179,6 +179,7 @@ fn app() -> Html {
         Quiz::Multiplication,
         Quiz::SquareArea,
         Quiz::FirstOrderEquationQuestion,
+        Quiz::FirstDegreeDerivativeQuestion,
     ]);
 
     let course = use_state(|| Quiz::NoCourse);
