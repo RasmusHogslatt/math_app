@@ -50,6 +50,19 @@ body {
     /* Restrict maximum height to viewport height */
 }
 
+.difficulty-easy {
+    color: green;
+    /* Or use a background color, border, or icon */
+}
+
+.difficulty-medium {
+    color: orange;
+}
+
+.difficulty-hard {
+    color: red;
+}
+
 .leaderboard-container {
     width: 100%;
 }

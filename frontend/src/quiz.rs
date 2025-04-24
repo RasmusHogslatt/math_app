@@ -2,6 +2,7 @@ use std::fmt::{self, Display};
 
 use rand::Rng;
 
+// Can I add subtypes to the enum? For example Addition and Subtraction should be "easy"
 #[derive(Clone, PartialEq, Debug, Copy, Eq, Hash)]
 pub enum Quiz {
     NoCourse,
@@ -46,6 +47,27 @@ impl std::str::FromStr for Quiz {
             _ => Ok(Quiz::NoCourse),
         }
     }
+}
+
+impl Quiz {
+    pub fn difficulty(&self) -> Difficulty {
+        match self {
+            Quiz::NoCourse => Difficulty::Easy,
+            Quiz::Addition => Difficulty::Easy,
+            Quiz::Subtraction => Difficulty::Easy,
+            Quiz::Multiplication => Difficulty::Easy,
+            Quiz::SquareArea => Difficulty::Medium,
+            Quiz::FirstOrderEquationQuestion => Difficulty::Hard,
+            Quiz::FirstDegreeDerivativeQuestion => Difficulty::Hard,
+        }
+    }
+}
+
+#[derive(Clone, PartialEq, Debug, Copy, Eq, Hash)]
+pub enum Difficulty {
+    Easy,
+    Medium,
+    Hard,
 }
 
 #[derive(Clone, Debug, PartialEq)]
