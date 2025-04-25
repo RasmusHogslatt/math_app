@@ -1,6 +1,7 @@
 mod api;
 mod components;
 mod quiz;
+mod quizzes;
 
 use components::Leaderboard;
 use gloo_timers::callback::Interval;
@@ -25,43 +26,6 @@ struct EnumListSelectorProps {
     pub selected: Quiz,
     pub on_change: Callback<Quiz>,
 }
-
-/* #[function_component(EnumListSelector)]
-fn enum_list_selector(props: &EnumListSelectorProps) -> Html {
-    html! {
-        <div class="enum-list-selector">
-            <h3>{"Choose a course:"}</h3>
-            <ul>
-                {
-                    props.options.iter().map(|course| {
-                        let course_value = course.clone();
-                        let on_click = {
-                            let on_change = props.on_change.clone();
-                            let course = course_value.clone();
-                            Callback::from(move |_| {
-                                on_change.emit(course.clone());
-                            })
-                        };
-
-                        let is_selected = &props.selected == course;
-                        let class = if is_selected { "selected" } else { "" };
-
-                        html! {
-                            <li
-                                class={class}
-                                onclick={on_click}
-                            >
-                                {course.to_string()}
-                                {if is_selected { " ✓" } else { "" }}
-                            </li>
-                        }
-                    }).collect::<Html>()
-                }
-            </ul>
-            <p>{"Current selection: "}{props.selected.to_string()}</p>
-        </div>
-    }
-} */
 
 #[function_component(EnumListSelector)]
 fn enum_list_selector(props: &EnumListSelectorProps) -> Html {
