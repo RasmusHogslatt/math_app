@@ -4,6 +4,7 @@ mod quiz;
 mod quizzes;
 
 use components::Leaderboard;
+use components::NumberComparisonComponent;
 use gloo_timers::callback::Interval;
 use quiz::*;
 
@@ -77,7 +78,6 @@ fn enum_list_selector(props: &EnumListSelectorProps) -> Html {
         </div>
     }
 }
-
 #[function_component(QuizSection)]
 fn quiz_section(props: &QuizSectionProps) -> Html {
     let input_ref = use_node_ref();
@@ -114,25 +114,43 @@ fn quiz_section(props: &QuizSectionProps) -> Html {
         props.total_questions
     );
 
+    // Determine if we're dealing with a NumberComparison question
     html! {
         <div class="quiz-section">
             <div class="quiz-header">
                 <div class="timer">{timer_display}</div>
                 <div class="progress">{progress}</div>
             </div>
-            <div class="question">
-                <h2>{props.question.display()}</h2>
-                <form onsubmit={on_submit}>
-                    <input
-                        type="text" // Changed from "number" to "text" to support fraction answers
-                        ref={input_ref}
-                        value={(*answer).clone()}
-                        oninput={on_input}
-                        placeholder="Enter your answer"
-                    />
-                    <button type="submit">{"Submit"}</button>
-                </form>
-            </div>
+
+            {
+                match &props.question {
+                    QuestionBox::NumberComparison(question) => {
+                        html! {
+                            <NumberComparisonComponent
+                                question={question.clone()}
+                                on_answer={props.on_answer.clone()}
+                            />
+                        }
+                    },
+                    _ => {
+                        html! {
+                            <div class="question">
+                                <h2>{props.question.display()}</h2>
+                                <form onsubmit={on_submit}>
+                                    <input
+                                        type="text"
+                                        ref={input_ref}
+                                        value={(*answer).clone()}
+                                        oninput={on_input}
+                                        placeholder="Enter your answer"
+                                    />
+                                    <button type="submit">{"Submit"}</button>
+                                </form>
+                            </div>
+                        }
+                    }
+                }
+            }
         </div>
     }
 }
@@ -195,6 +213,7 @@ fn app() -> Html {
         Quiz::SquareArea,
         Quiz::FirstOrderEquationQuestion,
         Quiz::FirstDegreeDerivativeQuestion,
+        Quiz::NumberComparison,
     ]);
 
     let course = use_state(|| Quiz::NoCourse);

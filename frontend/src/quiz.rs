@@ -12,6 +12,7 @@ pub enum Quiz {
     // Add percentages
     FirstOrderEquationQuestion,
     FirstDegreeDerivativeQuestion,
+    NumberComparison,
 }
 
 impl Display for Quiz {
@@ -28,6 +29,7 @@ impl Display for Quiz {
             Quiz::FirstDegreeDerivativeQuestion => {
                 write!(f, "First Degree Derivative")
             }
+            Quiz::NumberComparison => write!(f, "Number Comparison"),
         }
     }
 }
@@ -58,6 +60,7 @@ impl Quiz {
             Quiz::SquareArea => Difficulty::Medium,
             Quiz::FirstOrderEquationQuestion => Difficulty::Hard,
             Quiz::FirstDegreeDerivativeQuestion => Difficulty::Hard,
+            Quiz::NumberComparison => Difficulty::Medium,
         }
     }
 }
@@ -88,6 +91,7 @@ pub enum QuestionBox {
     Area(AreaQuestion),
     FirstOrderEquationQuestion(FirstOrderEquationQuestion),
     FirstDegreeDerivativeQuestion(FirstDegreeDerivativeQuestion),
+    NumberComparison(NumberComparisonQuestion),
 }
 
 impl Question for QuestionBox {
@@ -97,6 +101,7 @@ impl Question for QuestionBox {
             QuestionBox::Area(q) => q.prompt(),
             QuestionBox::FirstOrderEquationQuestion(q) => q.prompt(),
             QuestionBox::FirstDegreeDerivativeQuestion(q) => q.prompt(),
+            QuestionBox::NumberComparison(q) => q.prompt(),
         }
     }
 
@@ -106,6 +111,7 @@ impl Question for QuestionBox {
             QuestionBox::Area(q) => q.answer(),
             QuestionBox::FirstOrderEquationQuestion(q) => q.answer(),
             QuestionBox::FirstDegreeDerivativeQuestion(q) => q.answer(),
+            QuestionBox::NumberComparison(q) => q.answer(),
         }
     }
 
@@ -115,6 +121,7 @@ impl Question for QuestionBox {
             QuestionBox::Area(q) => q.check_answer(answer),
             QuestionBox::FirstOrderEquationQuestion(q) => q.check_answer(answer),
             QuestionBox::FirstDegreeDerivativeQuestion(q) => q.check_answer(answer),
+            QuestionBox::NumberComparison(q) => q.check_answer(answer),
         }
     }
 }
@@ -135,6 +142,9 @@ pub fn generate_questions(quiz_type: Quiz, count: usize) -> Vec<QuestionBox> {
             }
             Quiz::FirstDegreeDerivativeQuestion => {
                 QuestionBox::FirstDegreeDerivativeQuestion(FirstDegreeDerivativeQuestion::random())
+            }
+            Quiz::NumberComparison => {
+                QuestionBox::NumberComparison(NumberComparisonQuestion::random())
             }
         };
 

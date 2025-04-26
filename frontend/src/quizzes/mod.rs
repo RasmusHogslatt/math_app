@@ -6,3 +6,5 @@ pub mod first_order_equation;
 pub use first_order_equation::*;
 pub mod area;
 pub use area::*;
+pub mod number_comparison;
+pub use number_comparison::*;

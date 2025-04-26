@@ -16,10 +16,7 @@ impl MathQuestion {
             Quiz::Addition => first + second,
             Quiz::Subtraction => first - second,
             Quiz::Multiplication => first * second,
-            Quiz::NoCourse
-            | Quiz::SquareArea
-            | Quiz::FirstOrderEquationQuestion
-            | Quiz::FirstDegreeDerivativeQuestion => 0,
+            _ => 0,
         };
 
         Self {
@@ -50,10 +47,7 @@ impl MathQuestion {
                 let b = rng.random_range(1..2);
                 Self::new(a, b, operation)
             }
-            Quiz::NoCourse
-            | Quiz::SquareArea
-            | Quiz::FirstOrderEquationQuestion
-            | Quiz::FirstDegreeDerivativeQuestion => Self::new(0, 0, operation),
+            _ => Self::new(0, 0, operation),
         }
     }
 }
@@ -66,10 +60,7 @@ impl Question for MathQuestion {
             Quiz::Multiplication => {
                 format!("What is {} × {}?", self.first_number, self.second_number)
             }
-            Quiz::NoCourse
-            | Quiz::SquareArea
-            | Quiz::FirstOrderEquationQuestion
-            | Quiz::FirstDegreeDerivativeQuestion => "Not applicable".to_string(),
+            _ => "Not applicable".to_string(),
         }
     }
 
