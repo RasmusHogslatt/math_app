@@ -1,19 +1,19 @@
 mod api;
-mod components;
+pub mod components;
 mod quiz;
 mod quizzes;
 
 use components::Leaderboard;
-use components::NumberComparisonComponent;
+use components::QuizSelect;
+use components::QuizSession;
+use components::ResultSection;
 use gloo_timers::callback::Interval;
 use quiz::*;
-
 use std::rc::Rc;
 use web_sys::console;
 use web_time::{Duration, Instant};
 use yew::functional::*;
 use yew::prelude::*;
-
 #[derive(Clone, PartialEq)]
 enum AppState {
     Selection,
@@ -21,190 +21,9 @@ enum AppState {
     Result(bool, Duration), // (passed, time_taken)
 }
 
-#[derive(Properties, PartialEq)]
-struct EnumListSelectorProps {
-    pub options: Rc<Vec<Quiz>>,
-    pub selected: Quiz,
-    pub on_change: Callback<Quiz>,
-}
-
-#[function_component(EnumListSelector)]
-fn enum_list_selector(props: &EnumListSelectorProps) -> Html {
-    html! {
-        <div class="enum-list-selector">
-            <h3>{"Choose a course:"}</h3>
-            <ul>
-                {
-                    props.options.iter().map(|course| {
-                        let course_value = course.clone();
-                        let on_click = {
-                            let on_change = props.on_change.clone();
-                            let course = course_value.clone();
-                            Callback::from(move |_| {
-                                on_change.emit(course.clone());
-                            })
-                        };
-
-                        let is_selected = &props.selected == course;
-                        let class = if is_selected { "selected" } else { "" };
-
-                        // Get difficulty for styling
-                        let difficulty_class = match course.difficulty() {
-                            Difficulty::Easy => "difficulty-easy",
-                            Difficulty::Medium => "difficulty-medium",
-                            Difficulty::Hard => "difficulty-hard",
-                        };
-
-                        // Get difficulty label
-                        let difficulty_label = match course.difficulty() {
-                            Difficulty::Easy => " (Easy)",
-                            Difficulty::Medium => " (Medium)",
-                            Difficulty::Hard => " (Hard)",
-                        };
-
-                        html! {
-                            <li
-                                class={classes!(class, difficulty_class)}
-                                onclick={on_click}
-                            >
-                                {course.to_string()}{difficulty_label}
-                                {if is_selected { " ✓" } else { "" }}
-                            </li>
-                        }
-                    }).collect::<Html>()
-                }
-            </ul>
-            <p>{"Current selection: "}{props.selected.to_string()}</p>
-        </div>
-    }
-}
-#[function_component(QuizSection)]
-fn quiz_section(props: &QuizSectionProps) -> Html {
-    let input_ref = use_node_ref();
-    let answer = use_state(|| String::new());
-
-    let on_submit = {
-        let input_ref = input_ref.clone();
-        let answer = answer.clone();
-        let on_answer = props.on_answer.clone();
-
-        Callback::from(move |e: SubmitEvent| {
-            e.prevent_default();
-            let answer_value = (*answer).clone();
-            on_answer.emit(answer_value);
-            answer.set(String::new());
-            if let Some(input) = input_ref.cast::<web_sys::HtmlInputElement>() {
-                input.focus().unwrap_or_default();
-            }
-        })
-    };
-
-    let on_input = {
-        let answer = answer.clone();
-        Callback::from(move |e: InputEvent| {
-            let input: web_sys::HtmlInputElement = e.target_unchecked_into();
-            answer.set(input.value());
-        })
-    };
-
-    let timer_display = format!("Time: {:.1} seconds", props.elapsed_time.as_secs_f32());
-    let progress = format!(
-        "Question {}/{}",
-        props.current_question + 1,
-        props.total_questions
-    );
-
-    // Determine if we're dealing with a NumberComparison question
-    html! {
-        <div class="quiz-section">
-            <div class="quiz-header">
-                <div class="timer">{timer_display}</div>
-                <div class="progress">{progress}</div>
-            </div>
-
-            {
-                match &props.question {
-                    QuestionBox::NumberComparison(question) => {
-                        html! {
-                            <NumberComparisonComponent
-                                question={question.clone()}
-                                on_answer={props.on_answer.clone()}
-                            />
-                        }
-                    },
-                    _ => {
-                        html! {
-                            <div class="question">
-                                <h2>{props.question.display()}</h2>
-                                <form onsubmit={on_submit}>
-                                    <input
-                                        type="text"
-                                        ref={input_ref}
-                                        value={(*answer).clone()}
-                                        oninput={on_input}
-                                        placeholder="Enter your answer"
-                                    />
-                                    <button type="submit">{"Submit"}</button>
-                                </form>
-                            </div>
-                        }
-                    }
-                }
-            }
-        </div>
-    }
-}
-
-#[derive(Properties, PartialEq)]
-struct QuizSectionProps {
-    pub question: QuestionBox,
-    pub elapsed_time: Duration,
-    pub current_question: usize,
-    pub total_questions: usize,
-    pub on_answer: Callback<String>,
-}
-
-#[function_component(ResultSection)]
-fn result_section(props: &ResultSectionProps) -> Html {
-    let message = if props.passed {
-        format!(
-            "Good job, you finished in {:.1} seconds!",
-            props.time_taken.as_secs_f32()
-        )
-    } else {
-        format!("Failed! Try again.")
-    };
-
-    let on_restart = {
-        let on_restart = props.on_restart.clone();
-        Callback::from(move |_| {
-            on_restart.emit(());
-        })
-    };
-
-    html! {
-        <div class="result-section">
-            <h2 class={if props.passed { "success" } else { "failure" }}>{message}</h2>
-
-            <div class="result-actions">
-                <button onclick={on_restart}>{"Try Again"}</button>
-            </div>
-        </div>
-    }
-}
-
-#[derive(Properties, PartialEq)]
-struct ResultSectionProps {
-    pub passed: bool,
-    pub time_taken: Duration,
-    pub course: Quiz,
-    pub on_restart: Callback<()>,
-}
-
 // Main application component
 #[function_component(App)]
 fn app() -> Html {
-    // Create a vector that holds all possible enum variants
     let all_courses = Rc::new(vec![
         Quiz::NoCourse,
         Quiz::Addition,
@@ -396,7 +215,7 @@ fn app() -> Html {
     html! {
         <div class="app-container">
             <div class="sidebar">
-                <EnumListSelector
+                <QuizSelect
                     options={all_courses.clone()}
                     selected={(*course).clone()}
                     on_change={on_course_change}
@@ -422,7 +241,7 @@ fn app() -> Html {
                             if current_q < (*questions).len() {
                                 let question = (*questions)[current_q].clone();
                                 html! {
-                                    <QuizSection
+                                    <QuizSession
                                         question={question}
                                         elapsed_time={*elapsed_time}
                                         current_question={current_q}

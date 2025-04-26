@@ -1,4 +1,10 @@
-mod leaderboard;
+pub mod leaderboard;
 pub use leaderboard::*;
-mod number_comparison;
+pub mod number_comparison;
 pub use number_comparison::*;
+pub(crate) mod quiz_select;
+pub use quiz_select::*;
+pub mod quiz_session;
+pub use quiz_session::*;
+pub mod quiz_result;
+pub use quiz_result::*;
