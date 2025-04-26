@@ -21,7 +21,7 @@ impl Display for Quiz {
             Quiz::Addition => write!(f, "Addition"),
             Quiz::Subtraction => write!(f, "Subtraction"),
             Quiz::Multiplication => write!(f, "Multiplication"),
-            Quiz::SquareArea => write!(f, "Square Area"),
+            Quiz::SquareArea => write!(f, "Area"),
             Quiz::FirstOrderEquationQuestion => {
                 write!(f, "First Order Equation")
             }

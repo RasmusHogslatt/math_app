@@ -59,7 +59,6 @@ fn enum_list_selector(props: &EnumListSelectorProps) -> Html {
                             Difficulty::Easy => " (Easy)",
                             Difficulty::Medium => " (Medium)",
                             Difficulty::Hard => " (Hard)",
-                            _ => "",
                         };
 
                         html! {
