@@ -1,417 +1,754 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&family=Noto+Sans+Math&display=swap');
+// --- Variables ---
+// Using HSL colors for easier modification of saturation/lightness
+$primary-hue: 210; // Blue
+$secondary-hue: 145; // Green
+$accent-hue: 45; // Yellow/Orange
+$danger-hue: 0; // Red
+$neutral-hue: 215;
 
-body {
-    font-family: 'Noto Sans JP', 'Noto Sans Math', sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f0f2f5;
-    color: #333;
+$primary-color: hsl($primary-hue, 70%, 55%);
+$primary-color-light: hsl($primary-hue, 70%, 85%);
+$primary-color-dark: hsl($primary-hue, 70%, 40%);
+
+$secondary-color: hsl($secondary-hue, 60%, 50%);
+$secondary-color-light: hsl($secondary-hue, 60%, 90%);
+
+$accent-color: hsl($accent-hue, 90%, 60%);
+$accent-color-dark: hsl($accent-hue, 80%, 50%);
+
+$success-color: hsl($secondary-hue, 65%, 45%);
+$failure-color: hsl($danger-hue, 70%, 55%);
+$warning-color: hsl($accent-hue, 85%, 58%); // For medium difficulty
+
+$text-color: hsl($neutral-hue, 15%, 25%);
+$text-color-light: hsl($neutral-hue, 15%, 55%);
+$background-color: hsl($neutral-hue, 30%, 98%);
+$panel-background: hsl(0, 0%, 100%); // White panels
+$border-color: hsl($neutral-hue, 25%, 88%);
+$border-color-light: hsl($neutral-hue, 25%, 94%);
+
+$font-family-base: 'Noto Sans JP', 'Noto Sans Math', sans-serif;
+$font-size-base: 16px;
+$line-height-base: 1.6;
+
+$border-radius: 8px;
+$border-radius-small: 4px;
+$box-shadow: 0 4px 12px hsla($neutral-hue, 20%, 50%, 0.1);
+$box-shadow-hover: 0 6px 16px hsla($neutral-hue, 20%, 50%, 0.15);
+
+$sidebar-width: 280px;
+$leaderboard-width: 320px;
+$transition-speed: 0.25s;
+
+// --- Mixins ---
+@mixin button-style($bg-color: $primary-color, $text-color: white) {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: $font-size-base;
+    font-weight: 600;
+    color: $text-color;
+    background-color: $bg-color;
+    border: none;
+    border-radius: $border-radius;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    transition: background-color $transition-speed ease, transform $transition-speed ease, box-shadow $transition-speed ease;
+    box-shadow: 0 2px 5px hsla(0, 0%, 0%, 0.1);
+
+    &:hover:not(:disabled) {
+        background-color: lighten($bg-color, 8%);
+        transform: translateY(-2px);
+        box-shadow: $box-shadow-hover;
+    }
+
+    &:active:not(:disabled) {
+        transform: translateY(0);
+        box-shadow: 0 1px 3px hsla(0, 0%, 0%, 0.1);
+    }
+
+    &:disabled {
+        background-color: desaturate(lighten($bg-color, 25%), 50%);
+        color: desaturate(lighten($text-color, 50%), 50%);
+        cursor: not-allowed;
+        box-shadow: none;
+        transform: none;
+    }
 }
 
+@mixin panel-style {
+    background-color: $panel-background;
+    border-radius: $border-radius;
+    box-shadow: $box-shadow;
+    padding: 20px;
+}
+
+// --- Base Styles ---
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700&family=Noto+Sans+Math&display=swap');
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    font-size: $font-size-base; // Base for rem units
+}
+
+body {
+    font-family: $font-family-base;
+    margin: 0;
+    padding: 0;
+    background-color: $background-color;
+    color: $text-color;
+    line-height: $line-height-base;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    margin-top: 0;
+    margin-bottom: 0.75em;
+    font-weight: 600;
+    color: darken($text-color, 10%);
+}
+
+h2 {
+    font-size: 1.75rem;
+}
+
+h3 {
+    font-size: 1.4rem;
+}
+
+h4 {
+    font-size: 1.1rem;
+}
+
+p {
+    margin-top: 0;
+    margin-bottom: 1em;
+}
+
+a {
+    color: $primary-color;
+    text-decoration: none;
+    transition: color $transition-speed ease;
+
+    &:hover {
+        color: $primary-color-dark;
+        text-decoration: underline;
+    }
+}
+
+input[type="text"],
+input[type="number"],
+// If you add number inputs
+textarea {
+    padding: 10px 12px;
+    border: 1px solid $border-color;
+    border-radius: $border-radius-small;
+    font-family: $font-family-base;
+    font-size: 1rem;
+    transition: border-color $transition-speed ease, box-shadow $transition-speed ease;
+
+    &:focus {
+        outline: none;
+        border-color: $primary-color;
+        box-shadow: 0 0 0 3px hsla($primary-hue, 70%, 55%, 0.2);
+    }
+}
+
+// --- Layout ---
 .app-container {
     display: flex;
     height: 100vh;
     width: 100%;
     overflow: hidden;
-    /* Prevent scrollbars due to full height */
 }
 
 .sidebar {
-    width: 250px;
+    width: $sidebar-width;
+    background-color: lighten($background-color, 2%);
+    border-right: 1px solid $border-color;
     padding: 20px;
-    background-color: #f5f5f5;
-    border-right: 1px solid #ddd;
     overflow-y: auto;
-    /* Allow scrolling for long content */
+    flex-shrink: 0;
 }
 
 .main-content {
     flex: 1;
-    padding: 20px;
+    padding: 30px 40px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     min-width: 0;
-    /* Prevents flex items from overflowing */
     overflow-y: auto;
-    /* Allow scrolling for long content */
 }
 
-/* Leaderboard panel styles */
 .leaderboard-panel {
-    width: 300px;
+    width: $leaderboard-width;
+    background-color: lighten($background-color, 2%);
+    border-left: 1px solid $border-color;
     padding: 20px;
-    background-color: #f5f5f5;
-    border-left: 1px solid #ddd;
     overflow-y: auto;
-    /* Allow scrolling if content is too long */
-    max-height: 100vh;
-    /* Restrict maximum height to viewport height */
+    flex-shrink: 0;
 }
 
-.difficulty-easy {
-    color: green;
-    /* Or use a background color, border, or icon */
+// --- Component: QuizSelect (.sidebar) ---
+.quiz-select-container {
+    h3 {
+        margin-bottom: 1.2em;
+        color: $primary-color-dark;
+        border-bottom: 2px solid $primary-color-light;
+        padding-bottom: 0.5em;
+    }
 }
 
-.difficulty-medium {
-    color: orange;
+.difficulty-section {
+    margin-bottom: 12px;
+    border: 1px solid $border-color-light;
+    border-radius: $border-radius;
+    background-color: $panel-background;
+    box-shadow: 0 1px 3px hsla($neutral-hue, 15%, 50%, 0.05);
+    overflow: hidden; // Keep radius effective and hide overflowing content
+    transition: box-shadow $transition-speed ease;
+
+    &:hover {
+        box-shadow: 0 3px 8px hsla($neutral-hue, 15%, 50%, 0.08);
+    }
+
+    // Add specific border color based on difficulty class
+    &.difficulty-Easy {
+        border-left: 4px solid $success-color;
+    }
+
+    &.difficulty-Medium {
+        border-left: 4px solid $warning-color;
+    }
+
+    &.difficulty-Hard {
+        border-left: 4px solid $failure-color;
+    }
 }
 
-.difficulty-hard {
-    color: red;
-}
-
-.leaderboard-container {
-    width: 100%;
-}
-
-.leaderboard-container h2 {
-    font-size: 1.5rem;
-    margin-bottom: 15px;
-    color: #333;
-}
-
-.leaderboard-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-    font-size: 0.9rem;
-}
-
-.leaderboard-table th,
-.leaderboard-table td {
-    padding: 8px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-}
-
-.leaderboard-table th {
-    background-color: #e6f7ff;
-    color: #1890ff;
-    font-weight: bold;
-}
-
-.leaderboard-table tr:nth-child(even) {
-    background-color: #f9f9f9;
-}
-
-.leaderboard-table tr:hover {
-    background-color: #e6f7ff;
-}
-
-.submit-score {
-    margin-top: 20px;
-    padding: 15px;
-    background-color: #e6f7ff;
-    border-radius: 4px;
-    border: 1px solid #91d5ff;
-}
-
-.submit-score h3 {
-    margin-top: 0;
-    font-size: 1.2rem;
-    color: #0050b3;
-}
-
-.submit-score form {
+.collapsible-header {
+    background-color: transparent;
+    padding: 12px 15px;
+    margin: 0;
+    cursor: pointer;
+    user-select: none;
+    font-size: 1.1rem;
+    font-weight: 600;
+    // Remove border-bottom here, let the section border handle separation
+    // border-bottom: 1px solid $border-color-light;
+    transition: background-color $transition-speed ease;
     display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-top: 10px;
+    align-items: center;
+    gap: 8px;
+
+    &:hover {
+        background-color: hsl($neutral-hue, 20%, 96%);
+    }
 }
 
-.submit-score input {
-    padding: 8px;
-    border: 1px solid #d9d9d9;
-    border-radius: 4px;
-    font-size: 0.9rem;
+.course-list {
+    list-style: none;
+    padding: 0; // Padding is 0 when collapsed
+    margin: 0;
+    max-height: 0; // Start collapsed (height 0)
+    overflow: hidden; // IMPORTANT: Hide content when collapsed
+    transition: max-height 0.4s cubic-bezier(0.25, 0.1, 0.25, 1),
+        padding 0.4s ease; // Transition height and padding
+
+    // --- *** CHANGE IS HERE *** ---
+    // Target .course-list when the parent .difficulty-section has .expanded
+    .difficulty-section.expanded & {
+        max-height: 400px; // Set a sufficient max height for the content
+        padding: 10px 0; // Add vertical padding when expanded
+        border-top: 1px solid $border-color-light; // Add separator line above list
+    }
+
+    // --- *** END OF CHANGE *** ---
+
+    li {
+        padding: 10px 20px 10px 30px; // Indent items
+        cursor: pointer;
+        border-bottom: 1px solid $border-color-light;
+        transition: background-color $transition-speed ease, color $transition-speed ease;
+        position: relative;
+
+        &:last-child {
+            border-bottom: none;
+        }
+
+        &:hover {
+            background-color: $primary-color-light;
+            color: $primary-color-dark;
+        }
+
+        &.selected {
+            background-color: $primary-color;
+            color: white;
+            font-weight: 600;
+
+            &::before {
+                // Indicator bar for selected item
+                content: '';
+                position: absolute;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                width: 5px;
+                background-color: $primary-color-dark;
+                border-top-right-radius: 3px; // Curve inner edge
+                border-bottom-right-radius: 3px;
+            }
+
+            &::after {
+                // Checkmark for selected
+                content: "✓";
+                font-weight: bold;
+                margin-left: 8px;
+                color: lighten($primary-color, 40%);
+                float: right;
+            }
+        }
+    }
 }
 
-.submit-score button {
-    padding: 8px 16px;
-    background-color: #1890ff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: background-color 0.3s;
-}
-
-.submit-score button:hover {
-    background-color: #40a9ff;
-}
-
-.status-message {
-    margin-top: 10px;
-    font-size: 0.9rem;
-    color: #52c41a;
-}
-
-.status-message.error {
-    color: #f5222d;
-}
-
-.ssr-link {
+.current-selection-display {
     margin-top: 20px;
-    font-size: 0.8rem;
-}
-
-.ssr-link a {
-    color: #1890ff;
-    text-decoration: none;
-}
-
-.ssr-link a:hover {
-    text-decoration: underline;
-}
-
-/* Responsive adjustments */
-@media (max-width: 1024px) {
-    .app-container {
-        flex-direction: column;
-        height: auto;
-    }
-
-    .sidebar,
-    .leaderboard-panel {
-        width: 100%;
-        border: none;
-        border-bottom: 1px solid #ddd;
-    }
-
-    .main-content {
-        min-height: 50vh;
-    }
-}
-
-.enum-list-selector li {
-    padding: 8px 12px;
-    cursor: pointer;
-    border: 1px solid #ddd;
-    margin-bottom: 4px;
-    border-radius: 4px;
-}
-
-.enum-list-selector li:hover {
-    background-color: #f5f5f5;
-}
-
-.enum-list-selector li.selected {
-    background-color: #e6f7ff;
-    border-color: #1890ff;
-}
-
-.start-section {
+    padding: 10px 15px;
+    background-color: hsl($neutral-hue, 20%, 95%);
+    border-radius: $border-radius-small;
+    border: 1px solid $border-color;
+    font-style: italic;
+    color: $text-color-light;
+    font-size: 0.9rem;
     text-align: center;
 }
 
-.start-section button {
-    padding: 10px 20px;
-    font-size: 16px;
-    background-color: #1890ff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
+// --- Component: Start Section (.main-content) ---
+.start-section {
+    text-align: center;
+    @include panel-style;
+    max-width: 500px;
+
+    h2 {
+        color: $primary-color-dark;
+        margin-bottom: 0.5em;
+    }
+
+    p {
+        color: $text-color-light;
+        font-size: 1.1rem;
+        margin-bottom: 1.5em;
+    }
+
+    button {
+        @include button-style($accent-color, darken($accent-color, 40%));
+        font-size: 1.1rem;
+        padding: 12px 25px;
+    }
 }
 
-.start-section button:disabled {
-    background-color: #d9d9d9;
-    cursor: not-allowed;
-}
-
+// --- Component: Quiz Session (.main-content) ---
 .quiz-section {
     width: 100%;
-    max-width: 500px;
+    max-width: 650px;
+    @include panel-style;
+    display: flex;
+    flex-direction: column;
+    gap: 25px; // Space between header and question/form
 }
 
 .quiz-header {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 20px;
+    align-items: center;
+    padding-bottom: 15px;
+    border-bottom: 1px solid $border-color-light;
+    font-size: 1rem;
+    font-weight: 600;
+
+    .timer {
+        color: $primary-color;
+        background-color: $primary-color-light;
+        padding: 5px 12px;
+        border-radius: $border-radius-small;
+    }
+
+    .progress {
+        color: $text-color-light;
+    }
 }
 
 .question {
+    // Container for standard Q&A
     text-align: center;
+
+    h2 {
+        // The question prompt
+        font-size: 1.8rem; // Larger prompt
+        margin-bottom: 1.5em;
+        line-height: 1.4;
+        color: $text-color;
+        // Use Noto Sans Math if available and needed
+        font-family: 'Noto Sans Math', $font-family-base;
+    }
+
+    form {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        align-items: center;
+
+        input[type="text"] {
+            min-width: 150px; // Ensure input is reasonably sized
+            padding: 12px 15px;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+
+        button[type="submit"] {
+            @include button-style($secondary-color);
+            padding: 12px 25px;
+        }
+    }
 }
 
-.question h2 {
-    font-size: 24px;
-    margin-bottom: 20px;
-}
-
-.question form {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-}
-
-.question input {
-    padding: 10px;
-    font-size: 16px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    width: 100px;
-}
-
-.question button {
-    padding: 10px 20px;
-    background-color: #1890ff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.result-section {
-    text-align: center;
-}
-
-.result-section .success {
-    color: #52c41a;
-}
-
-.result-section .failure {
-    color: #f5222d;
-}
-
-.result-section button {
-    padding: 10px 20px;
-    background-color: #1890ff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-top: 20px;
-}
-
-/* Add this to your existing CSS file */
-
+// --- Component: Number Comparison ---
 .number-comparison-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
+    width: 100%; // Takes width from parent (.quiz-section)
+    text-align: center;
+
+    h2 {
+        // Question prompt
+        font-size: 1.8rem;
+        margin-bottom: 1.5em;
+        line-height: 1.4;
+        color: $text-color;
+        font-family: 'Noto Sans Math', $font-family-base;
+    }
 }
 
 .comparison-options {
     display: flex;
-    align-items: center;
+    flex-wrap: wrap; // Allow wrapping on smaller screens if needed
+    align-items: stretch; // Make buttons same height
     justify-content: center;
     margin-top: 20px;
-    gap: 20px;
+    gap: 30px; // More space around options
 }
 
 .comparison-option {
-    padding: 15px 30px;
-    font-size: 24px;
-    background-color: #f0f0f0;
-    border: 2px solid #ccc;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
+    // The clickable number buttons
+    @include button-style(hsl($neutral-hue, 20%, 90%), $text-color); // Light grey button
+    padding: 25px 40px;
+    font-size: 2.5rem; // Large numbers
+    font-weight: 700;
+    font-family: 'Noto Sans Math', $font-family-base; // Use math font
+    border: 2px solid $border-color;
+    border-radius: $border-radius;
+    box-shadow: $box-shadow;
+    flex: 1; // Allow buttons to grow but have a max-width
+    min-width: 150px;
+    max-width: 250px;
 
-.comparison-option:hover {
-    background-color: #e0e0e0;
-    transform: scale(1.05);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    &:hover:not(:disabled) {
+        background-color: hsl($neutral-hue, 20%, 85%);
+        border-color: hsl($neutral-hue, 20%, 75%);
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: $box-shadow-hover;
+    }
 }
 
 .comparison-separator {
-    font-size: 18px;
-    font-weight: bold;
-    color: #666;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: $text-color-light;
+    display: flex;
+    align-items: center; // Vertically center 'or'
 }
 
-/* Basic styling for collapsible sections */
-.quiz-select-container {
-    /* Add padding or margins as needed */
+// --- Component: Result Section (.main-content) ---
+.result-section {
+    text-align: center;
+    @include panel-style;
+    max-width: 500px;
+
+    h2 {
+        font-size: 2rem;
+        margin-bottom: 1.5em;
+        font-weight: 700;
+
+        &.success {
+            color: $success-color;
+        }
+
+        &.failure {
+            color: $failure-color;
+        }
+    }
+
+    .result-actions {
+        margin-top: 25px;
+
+        button {
+            // Restart/Try Again button
+            @include button-style($accent-color, darken($accent-color, 40%));
+            font-size: 1.1rem;
+            padding: 12px 25px;
+        }
+    }
 }
 
-.difficulty-section {
-    margin-bottom: 10px;
-    border: 1px solid #eee;
-    border-radius: 4px;
-    overflow: hidden;
-    /* Prevents content overflow */
+
+// --- Component: Leaderboard (.leaderboard-panel) ---
+.leaderboard-container {
+    display: flex;
+    flex-direction: column;
+    gap: 25px; // Space between sections
+
+    h2 {
+        // Leaderboard Title
+        text-align: center;
+        color: $primary-color-dark;
+        margin-bottom: 0; // Reduce default margin as gap is used
+    }
 }
 
-.collapsible-header {
-    background-color: #f0f0f0;
+// Submit Score Form
+.submit-score {
+    @include panel-style;
+    background-color: $primary-color-light;
+    border: 1px solid darken($primary-color-light, 10%);
+
+    h3 {
+        margin-top: 0;
+        font-size: 1.3rem;
+        color: $primary-color-dark;
+        text-align: center;
+        margin-bottom: 1em;
+    }
+
+    p {
+        // Your time display
+        text-align: center;
+        font-weight: 600;
+        color: $text-color;
+        margin-bottom: 1em;
+    }
+
+    form {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+
+        input[type="text"] {
+            text-align: center;
+        }
+
+        button[type="submit"] {
+            @include button-style($primary-color);
+        }
+    }
+}
+
+// Status Messages (Submit Success/Error, Loading)
+.status-message {
+    margin-top: 12px;
     padding: 8px 12px;
-    margin: 0;
-    cursor: pointer;
-    user-select: none;
-    /* Prevent text selection on click */
-    font-size: 1.1em;
-    border-bottom: 1px solid #eee;
-    /* Separator */
+    border-radius: $border-radius-small;
+    font-weight: 600;
+    text-align: center;
+    font-size: 0.95rem;
+
+    &.success {
+        background-color: lighten($success-color, 45%);
+        color: darken($success-color, 10%);
+    }
+
+    &.error {
+        background-color: lighten($failure-color, 35%);
+        color: darken($failure-color, 10%);
+    }
 }
 
-.collapsible-header:hover {
-    background-color: #e0e0e0;
-}
-
-.course-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    max-height: 300px;
-    /* Example max height */
-    overflow-y: auto;
-    /* Add scroll if list is long */
-    transition: max-height 0.3s ease-out;
-    /* Smooth transition */
-}
-
-.course-list li {
-    padding: 8px 12px 8px 25px;
-    /* Indent items */
-    cursor: pointer;
-    border-bottom: 1px solid #f8f8f8;
-    transition: background-color 0.2s ease;
-}
-
-.course-list li:last-child {
-    border-bottom: none;
-}
-
-.course-list li:hover {
-    background-color: #f5f5f5;
-}
-
-.course-list li.selected {
-    background-color: #d0e0ff;
-    font-weight: bold;
-}
-
-.difficulty-easy {
-    border-left: 3px solid lightgreen;
-}
-
-.difficulty-medium {
-    border-left: 3px solid orange;
-}
-
-.difficulty-hard {
-    border-left: 3px solid salmon;
-}
-
-.current-selection-display {
-    margin-top: 15px;
+// Loading/Error messages outside form
+.leaderboard-container>p {
+    // Direct children paragraphs
+    text-align: center;
     font-style: italic;
-    color: #555;
+    color: $text-color-light;
+
+    &.error {
+        // Specific error styling if needed
+        color: $failure-color;
+        font-weight: 600;
+        background-color: lighten($failure-color, 35%);
+        padding: 10px;
+        border-radius: $border-radius-small;
+    }
 }
 
-/* Style for the checkmark */
-.course-list li.selected::after {
-    content: " ✓";
-    color: green;
-    float: right;
-    /* Position checkmark */
+
+// Leaderboard Table
+.leaderboard-table {
+    width: 100%;
+    border-collapse: separate; // Use separate for border-radius on cells
+    border-spacing: 0;
+    font-size: 0.95rem;
+    @include panel-style; // Give the table itself a panel background
+    padding: 0; // Remove panel padding, apply to cells
+    overflow: hidden; // Ensure border-radius clips content
+
+    th,
+    td {
+        padding: 10px 12px;
+        text-align: left;
+        border-bottom: 1px solid $border-color-light;
+    }
+
+    th {
+        background-color: hsl($neutral-hue, 20%, 96%);
+        color: $text-color;
+        font-weight: 600;
+        text-align: center;
+    }
+
+    td:nth-child(1) {
+        width: 50px;
+        text-align: center;
+        font-weight: 600;
+        color: $primary-color;
+    }
+
+    // Rank
+    td:nth-child(2) {
+        font-weight: 500;
+    }
+
+    // Name
+    td:nth-child(3) {
+        text-align: right;
+        font-weight: 600;
+    }
+
+    // Time
+
+    tbody tr {
+        transition: background-color $transition-speed ease;
+
+        &:last-child td {
+            border-bottom: none;
+        }
+
+        &:hover {
+            background-color: $primary-color-light;
+        }
+    }
+
+    // Top 3 Highlighting (Optional)
+    tbody tr:nth-child(1) td:nth-child(1) {
+        background-color: hsl(45, 100%, 85%);
+    }
+
+    // Gold-ish
+    tbody tr:nth-child(2) td:nth-child(1) {
+        background-color: hsl(210, 20%, 88%);
+    }
+
+    // Silver-ish
+    tbody tr:nth-child(3) td:nth-child(1) {
+        background-color: hsl(30, 50%, 85%);
+    }
+
+    // Bronze-ish
+
+}
+
+// --- Responsive Adjustments ---
+@media (max-width: 1024px) {
+    .app-container {
+        flex-direction: column;
+        height: auto; // Allow content height
+        overflow-y: auto; // Allow body scroll
+    }
+
+    .sidebar,
+    .leaderboard-panel {
+        width: 100%;
+        max-height: 50vh; // Limit height when stacked
+        border: none;
+        border-bottom: 1px solid $border-color;
+        overflow-y: auto; // Ensure scroll within panel
+    }
+
+    .main-content {
+        min-height: 50vh; // Ensure it takes some space
+        padding: 20px; // Reduce padding slightly
+    }
+
+    .quiz-section {
+        max-width: 95%;
+    }
+
+    .comparison-options {
+        gap: 15px;
+    }
+
+    .comparison-option {
+        padding: 15px 25px;
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 600px) {
+    html {
+        font-size: 15px;
+    }
+
+    // Slightly smaller base font
+
+    .sidebar,
+    .leaderboard-panel {
+        padding: 15px;
+    }
+
+    .main-content {
+        padding: 15px;
+    }
+
+    .question h2,
+    .number-comparison-container h2 {
+        font-size: 1.5rem;
+    }
+
+    .question form,
+    .comparison-options {
+        flex-direction: column;
+        align-items: stretch; // Full width buttons/inputs
+    }
+
+    .comparison-separator {
+        margin: 10px 0;
+    }
+
+    .leaderboard-table {
+        font-size: 0.9rem;
+
+        th,
+        td {
+            padding: 8px;
+        }
+    }
 }

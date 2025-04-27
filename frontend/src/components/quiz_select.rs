@@ -73,8 +73,14 @@ pub fn quiz_select(props: &QuizSelectionProps) -> Html {
 
                     let arrow = if is_expanded { "▼" } else { "▶" };
 
+                    let section_classes = classes!(
+                        "difficulty-section",
+                        format!("difficulty-{}", difficulty_label), // Keep existing difficulty class
+                        is_expanded.then_some("expanded")          // Add "expanded" class conditionally
+                    );
+
                     html! {
-                        <div class="difficulty-section">
+                        <div class={section_classes}>
                             <h4 class="collapsible-header" onclick={on_toggle}>
                                 { arrow } { difficulty_label }
                             </h4>
@@ -93,22 +99,18 @@ pub fn quiz_select(props: &QuizSelectionProps) -> Html {
                                                 };
 
                                                 let is_selected = &props.selected == course;
-                                                let class = if is_selected { "selected" } else { "" };
-
-                                                // Get difficulty for styling (though now redundant as they are grouped)
-                                                let difficulty_class = match course.difficulty() {
-                                                    Difficulty::Easy => "difficulty-easy",
-                                                    Difficulty::Medium => "difficulty-medium",
-                                                    Difficulty::Hard => "difficulty-hard",
-                                                };
+                                                // Removed the individual difficulty class from li,
+                                                // it's now on the parent section. Keep .selected.
+                                                let item_class = if is_selected { "selected" } else { "" };
 
                                                 html! {
                                                     <li
-                                                        class={classes!(class, difficulty_class)}
+                                                        class={item_class} // Only apply 'selected' class here
                                                         onclick={on_click}
                                                     >
                                                         {course.to_string()}
-                                                        {if is_selected { " ✓" } else { "" }}
+                                                        // Keep checkmark logic if needed
+                                                        // {if is_selected { " ✓" } else { "" }}
                                                     </li>
                                                 }
                                             }).collect::<Html>()
