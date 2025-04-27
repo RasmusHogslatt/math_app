@@ -131,15 +131,13 @@ async fn submit_score(
     }
     .to_string();
 
-    let school = score.school.trim(); // Trim school name
+    let school = score.school.trim();
     let school = if school.is_empty() {
         "Unknown School"
     } else {
         school
     }
     .to_string();
-
-    // school_id comes directly from the request (it's a Uuid)
 
     // Start transaction
     let mut tx = match db_pool.begin().await {
@@ -150,50 +148,87 @@ async fn submit_score(
         }
     };
 
-    // Check if user (school_id) has already submitted a score for this course
-    // We check based on course and school_id, as one user/device should only submit once per course.
-    let existing = sqlx::query!(
+    // 1. Fetch the user's current scores for this specific course, ordered worst first
+    let user_scores = sqlx::query!(
         r#"
-        SELECT id FROM leaderboard
+        SELECT id, time_seconds
+        FROM leaderboard
         WHERE course = $1
-        AND school_id = $2 -- Check specifically for this user/device ID
+        AND school_id = $2
+        ORDER BY time_seconds DESC -- Worst score first
         "#,
         course,          // $1
         score.school_id, // $2
     )
-    .fetch_optional(&mut *tx) // Use the transaction
+    .fetch_all(&mut *tx) // Use the transaction
     .await;
 
-    match existing {
-        Ok(Some(_)) => {
-            // User/Device has already submitted a score for this course
-            // No need to rollback, just return conflict
-            return HttpResponse::Conflict()
-                .json("You (or this device) have already submitted a score for this course");
-        }
-        Ok(None) => {
-            // Proceed with inserting the score
+    let (current_scores_count, worst_score_id, worst_score_time) = match user_scores {
+        Ok(scores) => {
+            let count = scores.len();
+            let worst_id = scores.first().map(|r| r.id);
+            let worst_time = scores.first().map(|r| r.time_seconds);
+            (count, worst_id, worst_time)
         }
         Err(e) => {
-            eprintln!("Database error checking existing score: {}", e);
-            // Rollback happens automatically when tx drops without commit
-            return HttpResponse::InternalServerError().json("Failed to check existing score");
+            eprintln!("Database error fetching user scores: {}", e);
+            // Rollback happens automatically
+            return HttpResponse::InternalServerError().json("Failed to check existing scores");
+        }
+    };
+
+    let mut delete_worst = false;
+
+    // 2. Decide whether to insert the new score based on user's limit
+    if current_scores_count < MAX_ENTRIES_PER_COURSE as usize {
+        // User has space, always insert
+        println!(
+            "User {:?} has {} scores for course '{}' (limit {}). Inserting.",
+            score.school_id, current_scores_count, course, MAX_ENTRIES_PER_COURSE
+        );
+        // No deletion needed yet
+    } else {
+        // User is at the limit, check if the new score is better than their worst
+        match worst_score_time {
+            Some(worst_time) if score.time_seconds < worst_time => {
+                // New score is better than the worst, allow insertion and mark worst for deletion
+                println!(
+                    "User {:?} at limit for course '{}'. New score {:.2} is better than worst {:.2}. Replacing.",
+                    score.school_id, course, score.time_seconds, worst_time
+                );
+                delete_worst = true; // Mark the user's own worst score for deletion
+            }
+            _ => {
+                // User is at limit, and the new score is not better than their worst
+                println!(
+                    "User {:?} at limit for course '{}'. New score {:.2} is not better than worst {:.2}. Rejecting.",
+                    score.school_id,
+                    course,
+                    score.time_seconds,
+                    worst_score_time.unwrap_or(f64::INFINITY)
+                );
+                // Don't insert, return a conflict/rejection message
+                // Transaction will roll back automatically as it won't be committed.
+                return HttpResponse::Conflict().json(
+                    "Score is not fast enough to replace your slowest time for this course.",
+                );
+            }
         }
     }
 
-    // Insert new score
+    // 3. Insert the new score if allowed
     let insert_result = sqlx::query!(
         r#"
         INSERT INTO leaderboard (name, course, school, school_id, time_seconds, completed_at)
         VALUES ($1, $2, $3, $4, $5, $6)
         RETURNING id
         "#,
-        name,               // $1
-        course,             // $2
-        school,             // $3 - Use the validated school name
-        score.school_id,    // $4 - Use the provided school_id
-        score.time_seconds, // $5
-        Utc::now()          // $6
+        name,
+        course,
+        school,
+        score.school_id,
+        score.time_seconds,
+        Utc::now()
     )
     .fetch_one(&mut *tx) // Use the transaction
     .await;
@@ -202,36 +237,62 @@ async fn submit_score(
         Ok(record) => record.id,
         Err(e) => {
             eprintln!("Database error inserting score: {}", e);
-            // Rollback happens automatically when tx drops without commit
+            // Rollback happens automatically
             return HttpResponse::InternalServerError().json("Failed to save score");
         }
     };
 
-    // Clean up excess entries for the specific course
-    let delete_result = sqlx::query!(
-        r#"
-        DELETE FROM leaderboard
-        WHERE course = $1 AND id NOT IN (
-            SELECT id
-            FROM leaderboard
-            WHERE course = $1
-            ORDER BY time_seconds ASC, completed_at ASC -- Tie-breaker is crucial!
-            LIMIT $2
-        )
-        "#,
-        course,                        // $1
-        MAX_ENTRIES_PER_COURSE as i64  // $2 - Ensure type matches expected i64
-    )
-    .execute(&mut *tx) // Use the transaction
-    .await;
+    // 4. Delete the *user's own* worst score *if* needed (if delete_worst is true)
+    if delete_worst {
+        if let Some(id_to_delete) = worst_score_id {
+            println!(
+                "Deleting user's ({:?}) worst score (ID: {}) for course '{}'",
+                score.school_id, id_to_delete, course
+            );
+            let delete_user_worst_result = sqlx::query!(
+                "DELETE FROM leaderboard WHERE id = $1 AND school_id = $2", // Double-check school_id for safety
+                id_to_delete,
+                score.school_id
+            )
+            .execute(&mut *tx) // Use the transaction
+            .await;
 
-    if let Err(e) = delete_result {
-        eprintln!("Database error cleaning up leaderboard: {}", e);
-        // Rollback happens automatically when tx drops without commit
-        return HttpResponse::InternalServerError().json("Failed to update leaderboard ranking");
+            match delete_user_worst_result {
+                Ok(result) if result.rows_affected() == 1 => {
+                    println!(
+                        "Successfully deleted user's worst score ID: {}",
+                        id_to_delete
+                    );
+                }
+                Ok(_) => {
+                    // This case (0 rows affected) might happen if something changed between the check and delete, though unlikely within a transaction. Log it.
+                    eprintln!(
+                        "Warning: Attempted to delete user's worst score ID {} but it was not found or did not match school_id {:?}.",
+                        id_to_delete, score.school_id
+                    );
+                }
+                Err(e) => {
+                    eprintln!("Database error deleting user's worst score: {}", e);
+                    // Rollback happens automatically
+                    return HttpResponse::InternalServerError()
+                        .json("Failed to replace worst score");
+                }
+            }
+        } else {
+            // Should not happen if delete_worst is true, but log defensively
+            eprintln!(
+                "Warning: delete_worst was true, but no worst_score_id found for user {:?} course {}.",
+                score.school_id, course
+            );
+        }
     }
 
-    // Commit the transaction
+    // 5. REMOVED - No overall leaderboard cleanup in this operation.
+    //    The leaderboard might grow indefinitely for a course if many users submit scores.
+    //    Cleanup would need to be handled separately (e.g., a background job or admin task)
+    //    if you want to limit the *total* size of the leaderboard per course.
+
+    // 6. Commit the transaction
     match tx.commit().await {
         Ok(_) => HttpResponse::Created().json(serde_json::json!({ "id": new_id })),
         Err(e) => {
