@@ -1,3 +1,4 @@
+@charset "UTF-8";
 @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&family=Noto+Sans+Math&display=swap");
 body {
   font-family: "Noto Sans JP", "Noto Sans Math", sans-serif;
@@ -323,4 +324,92 @@ body {
   color: #666;
 }
 
-/*# sourceMappingURL=data:application/json;charset=utf-8,%7B%22version%22:3,%22sourceRoot%22:%22%22,%22sources%22:%5B%22../../index.scss%22%5D,%22names%22:%5B%5D,%22mappings%22:%22AAAQ;AAER;EACI;EACA;EACA;EACA;EACA;;;AAGJ;EACI;EACA;EACA;EACA;AACA;;;AAGJ;EACI;EACA;EACA;EACA;EACA;AACA;;;AAGJ;EACI;EACA;EACA;EACA;EACA;EACA;EACA;AACA;EACA;AACA;;;AAGJ;AACA;EACI;EACA;EACA;EACA;EACA;AACA;EACA;AACA;;;AAGJ;EACI;AACA;;;AAGJ;EACI;;;AAGJ;EACI;;;AAGJ;EACI;;;AAGJ;EACI;EACA;EACA;;;AAGJ;EACI;EACA;EACA;EACA;;;AAGJ;AAAA;EAEI;EACA;EACA;;;AAGJ;EACI;EACA;EACA;;;AAGJ;EACI;;;AAGJ;EACI;;;AAGJ;EACI;EACA;EACA;EACA;EACA;;;AAGJ;EACI;EACA;EACA;;;AAGJ;EACI;EACA;EACA;EACA;;;AAGJ;EACI;EACA;EACA;EACA;;;AAGJ;EACI;EACA;EACA;EACA;EACA;EACA;EACA;EACA;;;AAGJ;EACI;;;AAGJ;EACI;EACA;EACA;;;AAGJ;EACI;;;AAGJ;EACI;EACA;;;AAGJ;EACI;EACA;;;AAGJ;EACI;;;AAGJ;AACA;EACI;IACI;IACA;;EAGJ;AAAA;IAEI;IACA;IACA;;EAGJ;IACI;;;AAIR;EACI;EACA;EACA;EACA;EACA;;;AAGJ;EACI;;;AAGJ;EACI;EACA;;;AAGJ;EACI;;;AAGJ;EACI;EACA;EACA;EACA;EACA;EACA;EACA;;;AAGJ;EACI;EACA;;;AAGJ;EACI;EACA;;;AAGJ;EACI;EACA;EACA;;;AAGJ;EACI;;;AAGJ;EACI;EACA;;;AAGJ;EACI;EACA;EACA;;;AAGJ;EACI;EACA;EACA;EACA;EACA;;;AAGJ;EACI;EACA;EACA;EACA;EACA;EACA;;;AAGJ;EACI;;;AAGJ;EACI;;;AAGJ;EACI;;;AAGJ;EACI;EACA;EACA;EACA;EACA;EACA;EACA;;;AAGJ;AAEA;EACI;EACA;EACA;EACA;EACA;;;AAGJ;EACI;EACA;EACA;EACA;EACA;;;AAGJ;EACI;EACA;EACA;EACA;EACA;EACA;EACA;;;AAGJ;EACI;EACA;EACA;;;AAGJ;EACI;EACA;EACA%22,%22file%22:%22index.css%22%7D */
+/* Basic styling for collapsible sections */
+.quiz-select-container {
+  /* Add padding or margins as needed */
+}
+
+.difficulty-section {
+  margin-bottom: 10px;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  overflow: hidden;
+  /* Prevents content overflow */
+}
+
+.collapsible-header {
+  background-color: #f0f0f0;
+  padding: 8px 12px;
+  margin: 0;
+  cursor: pointer;
+  user-select: none;
+  /* Prevent text selection on click */
+  font-size: 1.1em;
+  border-bottom: 1px solid #eee;
+  /* Separator */
+}
+
+.collapsible-header:hover {
+  background-color: #e0e0e0;
+}
+
+.course-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 300px;
+  /* Example max height */
+  overflow-y: auto;
+  /* Add scroll if list is long */
+  transition: max-height 0.3s ease-out;
+  /* Smooth transition */
+}
+
+.course-list li {
+  padding: 8px 12px 8px 25px;
+  /* Indent items */
+  cursor: pointer;
+  border-bottom: 1px solid #f8f8f8;
+  transition: background-color 0.2s ease;
+}
+
+.course-list li:last-child {
+  border-bottom: none;
+}
+
+.course-list li:hover {
+  background-color: #f5f5f5;
+}
+
+.course-list li.selected {
+  background-color: #d0e0ff;
+  font-weight: bold;
+}
+
+.difficulty-easy {
+  border-left: 3px solid lightgreen;
+}
+
+.difficulty-medium {
+  border-left: 3px solid orange;
+}
+
+.difficulty-hard {
+  border-left: 3px solid salmon;
+}
+
+.current-selection-display {
+  margin-top: 15px;
+  font-style: italic;
+  color: #555;
+}
+
+/* Style for the checkmark */
+.course-list li.selected::after {
+  content: " ✓";
+  color: green;
+  float: right;
+  /* Position checkmark */
+}
+
+/*# sourceMappingURL=data:application/json;charset=utf-8,%7B%22version%22:3,%22sourceRoot%22:%22%22,%22sources%22:%5B%22../../index.scss%22%5D,%22names%22:%5B%5D,%22mappings%22:%22;AAAQ;AAER;EACI;EACA;EACA;EACA;EACA;;;AAGJ;EACI;EACA;EACA;EACA;AACA;;;AAGJ;EACI;EACA;EACA;EACA;EACA;AACA;;;AAGJ;EACI;EACA;EACA;EACA;EACA;EACA;EACA;AACA;EACA;AACA;;;AAGJ;AACA;EACI;EACA;EACA;EACA;EACA;AACA;EACA;AACA;;;AAGJ;EACI;AACA;;;AAGJ;EACI;;;AAGJ;EACI;;;AAGJ;EACI;;;AAGJ;EACI;EACA;EACA;;;AAGJ;EACI;EACA;EACA;EACA;;;AAGJ;AAAA;EAEI;EACA;EACA;;;AAGJ;EACI;EACA;EACA;;;AAGJ;EACI;;;AAGJ;EACI;;;AAGJ;EACI;EACA;EACA;EACA;EACA;;;AAGJ;EACI;EACA;EACA;;;AAGJ;EACI;EACA;EACA;EACA;;;AAGJ;EACI;EACA;EACA;EACA;;;AAGJ;EACI;EACA;EACA;EACA;EACA;EACA;EACA;EACA;;;AAGJ;EACI;;;AAGJ;EACI;EACA;EACA;;;AAGJ;EACI;;;AAGJ;EACI;EACA;;;AAGJ;EACI;EACA;;;AAGJ;EACI;;;AAGJ;AACA;EACI;IACI;IACA;;EAGJ;AAAA;IAEI;IACA;IACA;;EAGJ;IACI;;;AAIR;EACI;EACA;EACA;EACA;EACA;;;AAGJ;EACI;;;AAGJ;EACI;EACA;;;AAGJ;EACI;;;AAGJ;EACI;EACA;EACA;EACA;EACA;EACA;EACA;;;AAGJ;EACI;EACA;;;AAGJ;EACI;EACA;;;AAGJ;EACI;EACA;EACA;;;AAGJ;EACI;;;AAGJ;EACI;EACA;;;AAGJ;EACI;EACA;EACA;;;AAGJ;EACI;EACA;EACA;EACA;EACA;;;AAGJ;EACI;EACA;EACA;EACA;EACA;EACA;;;AAGJ;EACI;;;AAGJ;EACI;;;AAGJ;EACI;;;AAGJ;EACI;EACA;EACA;EACA;EACA;EACA;EACA;;;AAGJ;AAEA;EACI;EACA;EACA;EACA;EACA;;;AAGJ;EACI;EACA;EACA;EACA;EACA;;;AAGJ;EACI;EACA;EACA;EACA;EACA;EACA;EACA;;;AAGJ;EACI;EACA;EACA;;;AAGJ;EACI;EACA;EACA;;;AAGJ;AACA;AACI;;;AAGJ;EACI;EACA;EACA;EACA;AACA;;;AAGJ;EACI;EACA;EACA;EACA;EACA;AACA;EACA;EACA;AACA;;;AAGJ;EACI;;;AAGJ;EACI;EACA;EACA;EACA;AACA;EACA;AACA;EACA;AACA;;;AAGJ;EACI;AACA;EACA;EACA;EACA;;;AAGJ;EACI;;;AAGJ;EACI;;;AAGJ;EACI;EACA;;;AAGJ;EACI;;;AAGJ;EACI;;;AAGJ;EACI;;;AAGJ;EACI;EACA;EACA;;;AAGJ;AACA;EACI;EACA;EACA;AACA%22,%22file%22:%22index.css%22%7D */

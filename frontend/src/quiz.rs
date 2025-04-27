@@ -65,7 +65,7 @@ impl Quiz {
     }
 }
 
-#[derive(Clone, PartialEq, Debug, Copy, Eq, Hash)]
+#[derive(Clone, PartialEq, Debug, Copy, Eq, Hash, Ord, PartialOrd)]
 pub enum Difficulty {
     Easy,
     Medium,

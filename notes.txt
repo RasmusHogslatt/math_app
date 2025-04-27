@@ -1,5 +1,5 @@
-new table in db with school, schoold id, username, password
+New table with users
 
-school and school id should be added to leaderboard table
+change difficulty to year levels
 
-maximum number on leaderboard should be per course AND school id
+more courses per year levels
