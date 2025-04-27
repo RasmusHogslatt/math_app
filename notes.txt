@@ -1,6 +1,5 @@
-Backend:
+new table in db with school, schoold id, username, password
 
-Fronted:
-generate questions and verify in frontend. Check send time, name and challenge id/enum to backend and let backend handle leaderboard.
+school and school id should be added to leaderboard table
 
-TODO: Ask how to display list of courses with more than two courses and click on the coursename.
+maximum number on leaderboard should be per course AND school id

@@ -1,6 +1,6 @@
 // frontend/src/components/leaderboard.rs
 use crate::api::{self, ApiError}; // Import the api module and error type
-use common::{LeaderboardEntry, SubmitScoreRequest};
+use common::{LeaderboardEntry, SubmitScoreRequest, User};
 use wasm_bindgen_futures::spawn_local;
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
@@ -23,13 +23,12 @@ enum SubmitState {
     AlreadySubmitted, // Special case for 409 or if submitted flag is true
 }
 
-#[derive(Properties, PartialEq)]
+#[derive(Properties, PartialEq, Clone)]
 pub struct LeaderboardProps {
     pub course: String,
-    // If true, allow showing the submit form IF user_time is Some
+    pub user: User,
     pub allow_submission: bool,
     pub user_time: Option<f64>,
-    // No longer need on_reset_timer from parent
 }
 
 #[function_component(Leaderboard)]
@@ -38,18 +37,25 @@ pub fn leaderboard(props: &LeaderboardProps) -> Html {
     let player_name = use_state(String::new);
     let submit_state = use_state(|| SubmitState::Idle);
 
-    // Effect for fetching leaderboard data
+    // Ensure this is the version you have:
     {
         let fetch_state = fetch_state.clone();
         let course = props.course.clone();
+        let user = props.user.clone(); // User prop contains school/school_id
 
-        use_effect_with(props.course.clone(), move |_| {
+        // *** Effect depends on course AND user ***
+        use_effect_with((course.clone(), user.clone()), move |_| {
             if course == "No Course" {
-                fetch_state.set(FetchState::Success(Vec::new())); // Don't fetch for "No Course"
+                fetch_state.set(FetchState::Success(Vec::new()));
             } else {
                 fetch_state.set(FetchState::Loading);
+                // *** Get school/school_id from the user prop ***
+                let school = user.school.clone();
+                let school_id = user.school_id.clone();
+
                 spawn_local(async move {
-                    match api::fetch_leaderboard(&course).await {
+                    // *** Call fetch_leaderboard with all 3 arguments ***
+                    match api::fetch_leaderboard(&course, &school, &school_id).await {
                         Ok(data) => fetch_state.set(FetchState::Success(data)),
                         Err(e) => {
                             fetch_state.set(FetchState::Error(format!("Failed to load: {}", e)))
@@ -57,23 +63,24 @@ pub fn leaderboard(props: &LeaderboardProps) -> Html {
                     }
                 });
             }
-
-            || () // Using the same closure type for both paths
+            || ()
         });
     }
 
     // Effect for resetting submission state when course or user_time changes
     {
-        let player_name = player_name.clone();
         let submit_state = submit_state.clone();
-        let user_time = props.user_time; // Capture user_time for comparison
+        let user_time = props.user_time;
 
-        use_effect_with((props.course.clone(), user_time), move |_| {
-            // Reset submission state if course changes OR if a new time is available
-            player_name.set(String::new());
-            submit_state.set(SubmitState::Idle);
-            || ()
-        });
+        use_effect_with(
+            (props.course.clone(), user_time, props.user.name.clone()),
+            move |_| {
+                // Consider pre-filling name again if user changes, or keep empty
+                // player_name.set(initial_name); // Or player_name.set(String::new());
+                submit_state.set(SubmitState::Idle);
+                || ()
+            },
+        );
     }
 
     let handle_name_change = {
@@ -88,17 +95,21 @@ pub fn leaderboard(props: &LeaderboardProps) -> Html {
     let refresh_leaderboard = {
         let fetch_state = fetch_state.clone();
         let course = props.course.clone();
+        let user = props.user.clone(); // Need user info for refresh as well
         Callback::from(move |_| {
             if course != "No Course" {
                 let fetch_state = fetch_state.clone();
                 let course = course.clone();
-                fetch_state.set(FetchState::Loading); // Optionally show loading during refresh
+                let school = user.school.clone(); // Get user details for refresh
+                let school_id = user.school_id.clone();
+                fetch_state.set(FetchState::Loading);
                 spawn_local(async move {
-                    match api::fetch_leaderboard(&course).await {
+                    // Refresh using the updated fetch_leaderboard call
+                    match api::fetch_leaderboard(&course, &school, &school_id).await {
                         Ok(data) => fetch_state.set(FetchState::Success(data)),
                         Err(e) => {
                             fetch_state.set(FetchState::Error(format!("Failed to refresh: {}", e)))
-                        } // Or just keep old data on refresh error
+                        }
                     }
                 });
             }
@@ -111,24 +122,36 @@ pub fn leaderboard(props: &LeaderboardProps) -> Html {
         let course = props.course.clone();
         let user_time = props.user_time;
         let refresh_leaderboard = refresh_leaderboard.clone();
+        // Get user details directly from props inside the callback closure
+        let user = props.user.clone();
 
         Callback::from(move |e: SubmitEvent| {
             e.prevent_default();
 
-            // Prevent submission if already submitting or successful/already submitted
             if !matches!(*submit_state, SubmitState::Idle) {
+                // Consider allowing retry from Error state?
+                // if !matches!(*submit_state, SubmitState::Idle | SubmitState::Error(_)) { return; }
                 return;
             }
 
-            let name = (*player_name).trim().to_string();
-            if name.is_empty() {
+            let name_to_submit = (*player_name).trim();
+            let name = if name_to_submit.is_empty() {
+                // Use name from User prop if input is empty? Or force input?
+                // user.name.clone()
+                "Anonymous" // Or keep forcing input like before
+            } else {
+                name_to_submit
+            };
+
+            if name_to_submit.is_empty() {
+                // Keep validation if input required
                 submit_state.set(SubmitState::Error("Please enter your name".into()));
                 return;
             }
+
             let time = match user_time {
                 Some(t) => t,
                 None => {
-                    // This case should ideally not happen if the form isn't shown
                     submit_state.set(SubmitState::Error("No valid time to submit".into()));
                     return;
                 }
@@ -137,27 +160,30 @@ pub fn leaderboard(props: &LeaderboardProps) -> Html {
             submit_state.set(SubmitState::Submitting);
 
             let req = SubmitScoreRequest {
-                name: name.clone(),
+                name: name.to_string(), // Use the validated/derived name
                 course: course.clone(),
+                school: user.school.clone(), // Use school from user prop
+                school_id: user.school_id.clone(), // Use school_id from user prop
                 time_seconds: time,
             };
 
-            let submit_state = submit_state.clone(); // Clone for async block
-            let refresh_leaderboard = refresh_leaderboard.clone(); // Clone for async block
+            let submit_state = submit_state.clone();
+            let refresh_leaderboard = refresh_leaderboard.clone();
 
             spawn_local(async move {
                 match api::submit_score(&req).await {
                     Ok(()) => {
                         submit_state.set(SubmitState::Success("Score submitted!".into()));
-                        refresh_leaderboard.emit(()); // Refresh leaderboard on success
+                        refresh_leaderboard.emit(());
                     }
                     Err(ApiError::Conflict(_)) => {
+                        // Use a more specific message potentially, or the one from server
                         submit_state.set(SubmitState::AlreadySubmitted);
-                        refresh_leaderboard.emit(()); // Refresh anyway, maybe data changed
+                        refresh_leaderboard.emit(());
                     }
                     Err(e) => {
                         submit_state.set(SubmitState::Error(format!("Submission failed: {}", e)));
-                        // Don't reset to Idle here, keep error shown until user interaction
+                        // Consider resetting to Idle after a delay?
                     }
                 }
             });
@@ -174,7 +200,7 @@ pub fn leaderboard(props: &LeaderboardProps) -> Html {
 
     html! {
         <div class="leaderboard-container">
-            <h2>{format!("{} Leaderboard", props.course)}</h2>
+        <h2>{format!("{} Leaderboard", props.course)}</h2>
 
             // Submit score form
             if show_submit_form {

@@ -2,6 +2,8 @@ use common::{LeaderboardEntry, SubmitScoreRequest, config::API_BASE_URL};
 use gloo_net::http::Request;
 use serde::de::DeserializeOwned;
 use thiserror::Error;
+use uuid::Uuid;
+use web_sys::js_sys::encode_uri_component;
 
 #[derive(Error, Debug, Clone, PartialEq)]
 pub enum ApiError {
@@ -65,24 +67,39 @@ async fn handle_submit_response(response: gloo_net::http::Response) -> Result<()
     }
 }
 
-pub async fn fetch_leaderboard(course: &str) -> Result<Vec<LeaderboardEntry>, ApiError> {
+// Ensure this is the version you have:
+pub async fn fetch_leaderboard(
+    course: &str,
+    school: &str,
+    school_id: &Uuid,
+) -> Result<Vec<LeaderboardEntry>, ApiError> {
+    let encoded_course = encode_uri_component(course.trim().to_lowercase().as_str());
+    let encoded_school = encode_uri_component(school); // Encode school name
+    let school_id_str = school_id.to_string(); // Convert Uuid to string
+
+    // *** THIS is the critical line ***
     let url = format!(
-        "{}/api/leaderboard?course={}",
-        API_BASE_URL,
-        course.trim().to_lowercase()
+        "{}/api/leaderboard?course={}&school={}&school_id={}", // Must include all 3
+        API_BASE_URL, encoded_course, encoded_school, school_id_str
     );
-    let response = Request::get(&url).send().await?; // Propagates ApiError::Network
+    // Optional: Keep this log for debugging
+    web_sys::console::log_1(&format!("Fetching leaderboard from URL: {}", url).into());
+
+    let response = Request::get(&url).send().await?;
 
     handle_response(response).await
 }
 
 pub async fn submit_score(req: &SubmitScoreRequest) -> Result<(), ApiError> {
     let url = format!("{}/api/submit", API_BASE_URL);
+    web_sys::console::log_1(&format!("Submitting score to URL: {}", url).into()); // Debug log
+    web_sys::console::log_1(&format!("Submit request payload: {:?}", req).into()); // Debug log
+
     let response = Request::post(&url)
         .json(req)
         .map_err(|e| ApiError::Build(format!("Failed to serialize request: {}", e)))?
         .send()
-        .await?; // Propagates ApiError::Network
+        .await?;
 
     handle_submit_response(response).await
 }

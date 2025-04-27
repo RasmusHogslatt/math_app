@@ -29,6 +29,8 @@ async fn setup_database() -> PgPool {
             id SERIAL PRIMARY KEY,
             name VARCHAR(100) NOT NULL,
             course VARCHAR(50) NOT NULL,
+            school VARCHAR(100) NOT NULL,
+            school_id UUID NOT NULL,
             time_seconds FLOAT NOT NULL,
             completed_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
         )
@@ -41,12 +43,13 @@ async fn setup_database() -> PgPool {
     // Create index for faster lookups per course
     sqlx::query(
         r#"
-        CREATE INDEX IF NOT EXISTS idx_leaderboard_course_time ON leaderboard (course, time_seconds ASC, completed_At DESC);
+        CREATE INDEX IF NOT EXISTS idx_leaderboard_course_time_schoolid
+        ON leaderboard (course, time_seconds ASC, school_id);
         "#,
     )
     .execute(&pool)
     .await
-    .expect("Failed to create index on course");
+    .expect("Failed to create index on course, time_seconds, school_id");
 
     // Fix any existing NULL values in the table
     sqlx::query(
@@ -55,14 +58,23 @@ async fn setup_database() -> PgPool {
         SET
             name         = COALESCE(name,         'Anonymous'),
             course       = COALESCE(course,       'default'),
+            school       = COALESCE(school,       'Unknown School'),
+            school_id    = COALESCE(school_id,    '00000000-0000-0000-0000-000000000000'::uuid),
+            time_seconds = COALESCE(time_seconds, 999999.0),
             completed_at = COALESCE(completed_at, NOW())
-            WHERE name IS NULL OR course IS NULL OR completed_at IS NULL
+        WHERE name IS NULL
+           OR course IS NULL
+           OR school IS NULL
+           OR school_id IS NULL
+           OR time_seconds IS NULL
+           OR completed_at IS NULL
         "#,
     )
     .execute(&pool)
     .await
-    .expect("Failed to update leaderboard defaults");
+    .expect("Failed to update leaderboard defaults for potentially null columns");
 
+    println!("Database setup complete with index on (course, time_seconds, school_id).");
     pool
 }
 
@@ -71,17 +83,26 @@ async fn get_leaderboard(
     db_pool: web::Data<PgPool>,
     req: web::Query<LeaderboardRequest>,
 ) -> impl Responder {
+    let limit = req
+        .limit
+        .unwrap_or((MAX_ENTRIES_PER_COURSE as i64).try_into().unwrap());
+
+    // Use the macro version for compile-time checks and direct struct mapping
     let result = sqlx::query_as!(
-        LeaderboardEntry,
+        LeaderboardEntry, // Target struct
         r#"
-        SELECT id, name, course, time_seconds, completed_at
+        SELECT id, name, course, school, school_id, time_seconds, completed_at
         FROM leaderboard
         WHERE course = $1
-        ORDER BY time_seconds ASC
-        LIMIT $2
+          AND school = $2    -- Filter by school
+          AND school_id = $3 -- Filter by school_id
+        ORDER BY time_seconds ASC, completed_at DESC -- Use new index fields
+        LIMIT $4             -- Limit parameter is now $4
         "#,
-        req.course,
-        MAX_ENTRIES_PER_COURSE as i64
+        &req.course,   // $1
+        &req.school,   // $2
+        req.school_id, // $3 - Uuid doesn't usually need a reference here
+        limit as i64   // $4
     )
     .fetch_all(db_pool.get_ref())
     .await;
@@ -89,29 +110,38 @@ async fn get_leaderboard(
     match result {
         Ok(entries) => HttpResponse::Ok().json(entries),
         Err(e) => {
-            eprintln!("Database error: {}", e);
+            eprintln!("Database error fetching leaderboard: {}", e);
             HttpResponse::InternalServerError().json("Failed to fetch leaderboard")
         }
     }
 }
-
 async fn submit_score(
     db_pool: web::Data<PgPool>,
     score: web::Json<SubmitScoreRequest>,
 ) -> impl Responder {
-    // Ensure we don't insert empty values
-    let name = if score.name.is_empty() {
-        "Anonymous".to_string()
-    } else {
-        score.name.trim().to_string()
-    };
-    let course = if score.course.is_empty() {
-        "default".to_string()
-    } else {
-        score.course.trim().to_lowercase().to_string()
-    };
+    // Trim and provide defaults
+    let name = score.name.trim();
+    let name = if name.is_empty() { "Anonymous" } else { name }.to_string();
 
-    // Start transaction to ensure atomicity
+    let course = score.course.trim().to_lowercase();
+    let course = if course.is_empty() {
+        "default"
+    } else {
+        &course
+    }
+    .to_string();
+
+    let school = score.school.trim(); // Trim school name
+    let school = if school.is_empty() {
+        "Unknown School"
+    } else {
+        school
+    }
+    .to_string();
+
+    // school_id comes directly from the request (it's a Uuid)
+
+    // Start transaction
     let mut tx = match db_pool.begin().await {
         Ok(tx) => tx,
         Err(e) => {
@@ -120,30 +150,64 @@ async fn submit_score(
         }
     };
 
+    // Check if user (school_id) has already submitted a score for this course
+    // We check based on course and school_id, as one user/device should only submit once per course.
+    let existing = sqlx::query!(
+        r#"
+        SELECT id FROM leaderboard
+        WHERE course = $1
+        AND school_id = $2 -- Check specifically for this user/device ID
+        "#,
+        course,          // $1
+        score.school_id, // $2
+    )
+    .fetch_optional(&mut *tx) // Use the transaction
+    .await;
+
+    match existing {
+        Ok(Some(_)) => {
+            // User/Device has already submitted a score for this course
+            // No need to rollback, just return conflict
+            return HttpResponse::Conflict()
+                .json("You (or this device) have already submitted a score for this course");
+        }
+        Ok(None) => {
+            // Proceed with inserting the score
+        }
+        Err(e) => {
+            eprintln!("Database error checking existing score: {}", e);
+            // Rollback happens automatically when tx drops without commit
+            return HttpResponse::InternalServerError().json("Failed to check existing score");
+        }
+    }
+
     // Insert new score
     let insert_result = sqlx::query!(
         r#"
-        INSERT INTO leaderboard (name, course, time_seconds, completed_at)
-        VALUES ($1, $2, $3, $4)
+        INSERT INTO leaderboard (name, course, school, school_id, time_seconds, completed_at)
+        VALUES ($1, $2, $3, $4, $5, $6)
         RETURNING id
         "#,
-        name,
-        course,
-        score.time_seconds,
-        Utc::now()
+        name,               // $1
+        course,             // $2
+        school,             // $3 - Use the validated school name
+        score.school_id,    // $4 - Use the provided school_id
+        score.time_seconds, // $5
+        Utc::now()          // $6
     )
-    .fetch_one(&mut *tx)
+    .fetch_one(&mut *tx) // Use the transaction
     .await;
 
     let new_id = match insert_result {
         Ok(record) => record.id,
         Err(e) => {
             eprintln!("Database error inserting score: {}", e);
-            // Rollback is implicit when tx goes out of scope without commit
+            // Rollback happens automatically when tx drops without commit
             return HttpResponse::InternalServerError().json("Failed to save score");
         }
     };
 
+    // Clean up excess entries for the specific course
     let delete_result = sqlx::query!(
         r#"
         DELETE FROM leaderboard
@@ -155,15 +219,15 @@ async fn submit_score(
             LIMIT $2
         )
         "#,
-        course,
-        MAX_ENTRIES_PER_COURSE
+        course,                        // $1
+        MAX_ENTRIES_PER_COURSE as i64  // $2 - Ensure type matches expected i64
     )
     .execute(&mut *tx) // Use the transaction
     .await;
 
     if let Err(e) = delete_result {
         eprintln!("Database error cleaning up leaderboard: {}", e);
-        // Rollback is implicit when tx goes out of scope without commit
+        // Rollback happens automatically when tx drops without commit
         return HttpResponse::InternalServerError().json("Failed to update leaderboard ranking");
     }
 

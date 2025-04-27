@@ -3,6 +3,7 @@ pub mod components;
 mod quiz;
 mod quizzes;
 
+use common::User;
 use components::Leaderboard;
 use components::QuizSelect;
 use components::QuizSession;
@@ -10,6 +11,7 @@ use components::ResultSection;
 use gloo_timers::callback::Interval;
 use quiz::*;
 use std::rc::Rc;
+use uuid::Uuid;
 use web_sys::console;
 use web_time::{Duration, Instant};
 use yew::functional::*;
@@ -24,6 +26,9 @@ enum AppState {
 // Main application component
 #[function_component(App)]
 fn app() -> Html {
+    const DEV_UUID: Uuid = uuid::uuid!("26493f93-6de3-4376-94b3-c8ec2dba1dc4");
+    let mut dummy_user = User::new_dummy();
+    dummy_user.school_id = DEV_UUID;
     let all_courses = Rc::new(vec![
         Quiz::NoCourse,
         Quiz::Addition,
@@ -266,10 +271,10 @@ fn app() -> Html {
             </div>
             <div class="leaderboard-panel">
             <Leaderboard
-               course={(*course).to_string()} // Convert Quiz enum to String for the prop
+               course={(*course).to_string()}
+               user={dummy_user.clone()}
                allow_submission={allow_submission}
                user_time={current_user_time}
-               // on_reset_timer is removed
            />
        </div>
         </div>

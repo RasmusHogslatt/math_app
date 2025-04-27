@@ -17,3 +17,4 @@ gloo-timers = "0.3.0"
 web-time = "1.1.0"
 serde = { version = "1.0", features = ["derive"] }
 thiserror = "1.0"
+uuid = { version = "1", features = ["serde", "v4", "js"] }
