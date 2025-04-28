@@ -226,15 +226,15 @@ textarea {
     }
 
     // Add specific border color based on difficulty class
-    &.difficulty-Easy {
+    &.difficulty-YearOne {
         border-left: 4px solid $success-color;
     }
 
-    &.difficulty-Medium {
+    &.difficulty-YearTwo {
         border-left: 4px solid $warning-color;
     }
 
-    &.difficulty-Hard {
+    &.difficulty-YearThree {
         border-left: 4px solid $failure-color;
     }
 }

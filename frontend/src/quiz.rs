@@ -1,15 +1,26 @@
 use crate::quizzes::*;
 use std::fmt::{self, Display};
 
-// Can I add subtypes to the enum? For example Addition and Subtraction should be "easy"
+#[derive(Clone, PartialEq, Debug, Copy, Eq, Hash, Ord, PartialOrd)]
+pub enum Difficulty {
+    YearOne,
+    YearTwo,
+    YearThree,
+    YearFour,
+    YearFive,
+    YearSix,
+    YearSeven,
+    YearEight,
+    YearNine,
+}
+
 #[derive(Clone, PartialEq, Debug, Copy, Eq, Hash)]
 pub enum Quiz {
     NoCourse,
     Addition,
     Subtraction,
     Multiplication,
-    SquareArea, // Modify this to do all square, rectangle, triangle and circle
-    // Add percentages
+    SquareArea,
     FirstOrderEquationQuestion,
     FirstDegreeDerivativeQuestion,
     NumberComparison,
@@ -53,23 +64,16 @@ impl std::str::FromStr for Quiz {
 impl Quiz {
     pub fn difficulty(&self) -> Difficulty {
         match self {
-            Quiz::NoCourse => Difficulty::Easy,
-            Quiz::Addition => Difficulty::Easy,
-            Quiz::Subtraction => Difficulty::Easy,
-            Quiz::Multiplication => Difficulty::Easy,
-            Quiz::SquareArea => Difficulty::Medium,
-            Quiz::FirstOrderEquationQuestion => Difficulty::Hard,
-            Quiz::FirstDegreeDerivativeQuestion => Difficulty::Hard,
-            Quiz::NumberComparison => Difficulty::Medium,
+            Quiz::NoCourse => Difficulty::YearOne,
+            Quiz::Addition => Difficulty::YearOne,
+            Quiz::Subtraction => Difficulty::YearOne,
+            Quiz::Multiplication => Difficulty::YearOne,
+            Quiz::SquareArea => Difficulty::YearTwo,
+            Quiz::FirstOrderEquationQuestion => Difficulty::YearThree,
+            Quiz::FirstDegreeDerivativeQuestion => Difficulty::YearThree,
+            Quiz::NumberComparison => Difficulty::YearTwo,
         }
     }
-}
-
-#[derive(Clone, PartialEq, Debug, Copy, Eq, Hash, Ord, PartialOrd)]
-pub enum Difficulty {
-    Easy,
-    Medium,
-    Hard,
 }
 
 pub trait Question {

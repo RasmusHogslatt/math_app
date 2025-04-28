@@ -25,9 +25,9 @@ pub fn quiz_select(props: &QuizSelectionProps) -> Html {
         // Optional: Initialize based on existing difficulties, or leave empty
         // If left empty, sections will default to collapsed when first encountered.
         // Or, you can pre-populate if needed:
-        map.insert(Difficulty::Easy, false);
-        map.insert(Difficulty::Medium, false);
-        map.insert(Difficulty::Hard, false);
+        map.insert(Difficulty::YearOne, false);
+        map.insert(Difficulty::YearTwo, false);
+        map.insert(Difficulty::YearThree, false);
         map
     });
 
@@ -52,10 +52,27 @@ pub fn quiz_select(props: &QuizSelectionProps) -> Html {
             <h3>{"Choose a course:"}</h3>
             {
                 courses_by_difficulty.iter().map(|(difficulty, courses)| {
-                    let difficulty_label = match difficulty {
-                        Difficulty::Easy => "Easy",
-                        Difficulty::Medium => "Medium",
-                        Difficulty::Hard => "Hard",
+                    let difficulty_css_label = match difficulty {
+                        Difficulty::YearOne => "YearOne",
+                        Difficulty::YearTwo => "YearTwo",
+                        Difficulty::YearThree => "YearThree",
+                        Difficulty::YearFour => "YearFour",
+                        Difficulty::YearFive => "YearFive",
+                        Difficulty::YearSix => "YearSix",
+                        Difficulty::YearSeven => "YearSeven",
+                        Difficulty::YearEight => "YearEight",
+                        Difficulty::YearNine => "YearNine",
+                    };
+                    let difficulty_name = match difficulty {
+                        Difficulty::YearOne => "Year 1",
+                        Difficulty::YearTwo => "Year 2",
+                        Difficulty::YearThree => "Year 3",
+                        Difficulty::YearFour => "Year 4",
+                        Difficulty::YearFive => "Year 5",
+                        Difficulty::YearSix => "Year 6",
+                        Difficulty::YearSeven => "Year 7",
+                        Difficulty::YearEight => "Year 8",
+                        Difficulty::YearNine => "Year 9",
                     };
 
                     let is_expanded = *collapsed_states.get(difficulty).unwrap_or(&false);
@@ -75,14 +92,14 @@ pub fn quiz_select(props: &QuizSelectionProps) -> Html {
 
                     let section_classes = classes!(
                         "difficulty-section",
-                        format!("difficulty-{}", difficulty_label), // Keep existing difficulty class
-                        is_expanded.then_some("expanded")          // Add "expanded" class conditionally
+                        format!("difficulty-{}", difficulty_css_label),
+                        is_expanded.then_some("expanded")
                     );
 
                     html! {
                         <div class={section_classes}>
                             <h4 class="collapsible-header" onclick={on_toggle}>
-                                { arrow } { difficulty_label }
+                                { arrow } { difficulty_name }
                             </h4>
                             { if is_expanded {
                                 html! {
