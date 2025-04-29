@@ -1,6 +1,15 @@
 use crate::quizzes::*;
 use std::fmt::{self, Display};
 
+// --- ADDING A NEW QUIZ CHECKLIST ---
+// 1. Create `frontend/src/quizzes/your_quiz.rs` with the struct implementing `Question`.
+// 2. Add a variant to the `Quiz` enum below. (e.g., `YourQuiz`)
+// 3. Add a variant to the `QuestionBox` enum below. (e.g., `YourQuiz(YourQuizQuestion)`)
+// 4. Update `generate_question` match statement (inside generate_questions).
+// 5. Add the `Quiz::YourQuiz` variant to the `ALL_COURSES` list below.
+// 6. (Optional) If custom UI needed, update `frontend/src/components/quiz_session.rs`.
+// ------------------------------------
+
 #[derive(Clone, PartialEq, Debug, Copy, Eq, Hash, Ord, PartialOrd)]
 pub enum Difficulty {
     YearOne,
@@ -24,6 +33,7 @@ pub enum Quiz {
     FirstOrderEquationQuestion,
     FirstDegreeDerivativeQuestion,
     NumberComparison,
+    SixRounding,
 }
 
 impl Display for Quiz {
@@ -41,6 +51,7 @@ impl Display for Quiz {
                 write!(f, "First Degree Derivative")
             }
             Quiz::NumberComparison => write!(f, "Number Comparison"),
+            Quiz::SixRounding => write!(f, "Rounding"),
         }
     }
 }
@@ -56,6 +67,8 @@ impl std::str::FromStr for Quiz {
             "Square Area" => Ok(Quiz::SquareArea),
             "First Order Equation" => Ok(Quiz::FirstOrderEquationQuestion),
             "First Degree Derivative" => Ok(Quiz::FirstDegreeDerivativeQuestion),
+            "Number Comparison" => Ok(Quiz::NumberComparison),
+            "Rounding" => Ok(Quiz::SixRounding),
             _ => Ok(Quiz::NoCourse),
         }
     }
@@ -72,6 +85,7 @@ impl Quiz {
             Quiz::FirstOrderEquationQuestion => Difficulty::YearThree,
             Quiz::FirstDegreeDerivativeQuestion => Difficulty::YearThree,
             Quiz::NumberComparison => Difficulty::YearTwo,
+            Quiz::SixRounding => Difficulty::YearSix,
         }
     }
 }
@@ -96,6 +110,7 @@ pub enum QuestionBox {
     FirstOrderEquationQuestion(FirstOrderEquationQuestion),
     FirstDegreeDerivativeQuestion(FirstDegreeDerivativeQuestion),
     NumberComparison(NumberComparisonQuestion),
+    SixRounding(SixRoundingQuestion),
 }
 
 impl Question for QuestionBox {
@@ -106,6 +121,7 @@ impl Question for QuestionBox {
             QuestionBox::FirstOrderEquationQuestion(q) => q.prompt(),
             QuestionBox::FirstDegreeDerivativeQuestion(q) => q.prompt(),
             QuestionBox::NumberComparison(q) => q.prompt(),
+            QuestionBox::SixRounding(q) => q.prompt(),
         }
     }
 
@@ -116,6 +132,7 @@ impl Question for QuestionBox {
             QuestionBox::FirstOrderEquationQuestion(q) => q.answer(),
             QuestionBox::FirstDegreeDerivativeQuestion(q) => q.answer(),
             QuestionBox::NumberComparison(q) => q.answer(),
+            QuestionBox::SixRounding(q) => q.answer(),
         }
     }
 
@@ -126,6 +143,7 @@ impl Question for QuestionBox {
             QuestionBox::FirstOrderEquationQuestion(q) => q.check_answer(answer),
             QuestionBox::FirstDegreeDerivativeQuestion(q) => q.check_answer(answer),
             QuestionBox::NumberComparison(q) => q.check_answer(answer),
+            QuestionBox::SixRounding(q) => q.check_answer(answer),
         }
     }
 }
@@ -150,6 +168,7 @@ pub fn generate_questions(quiz_type: Quiz, count: usize) -> Vec<QuestionBox> {
             Quiz::NumberComparison => {
                 QuestionBox::NumberComparison(NumberComparisonQuestion::random())
             }
+            Quiz::SixRounding => QuestionBox::SixRounding(SixRoundingQuestion::random()),
         };
 
         questions.push(question);

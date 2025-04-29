@@ -50,7 +50,6 @@ pub fn quiz_session(props: &QuizSectionProps) -> Html {
         props.total_questions
     );
 
-    // Determine if we're dealing with a NumberComparison question
     html! {
         <div class="quiz-section">
             <div class="quiz-header">
@@ -59,6 +58,7 @@ pub fn quiz_session(props: &QuizSectionProps) -> Html {
             </div>
 
             {
+                // Choose which component to render based on the question type
                 match &props.question {
                     QuestionBox::NumberComparison(question) => {
                         html! {

@@ -8,3 +8,5 @@ pub mod area;
 pub use area::*;
 pub mod number_comparison;
 pub use number_comparison::*;
+pub mod six_rounding;
+pub use six_rounding::*;

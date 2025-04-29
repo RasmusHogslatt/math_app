@@ -1,0 +1,34 @@
+use rand::Rng;
+
+use crate::quiz::Question;
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct SixRoundingQuestion {
+    number: f32,
+    answer: String,
+}
+
+impl SixRoundingQuestion {
+    pub fn new(number: f32) -> Self {
+        Self {
+            number: number,
+            answer: (number.round() as i32).to_string(),
+        }
+    }
+
+    pub fn random() -> Self {
+        let mut rng = rand::rng();
+        let number: f32 = rng.random_range(-20.0..20.0);
+        Self::new(number)
+    }
+}
+
+impl Question for SixRoundingQuestion {
+    fn prompt(&self) -> String {
+        format!("Round to the nearest whole number: {}", self.number)
+    }
+
+    fn answer(&self) -> &str {
+        &self.answer
+    }
+}
