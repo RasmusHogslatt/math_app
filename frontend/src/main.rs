@@ -2,6 +2,7 @@ mod api;
 pub mod components;
 mod quiz;
 mod quizzes;
+mod util;
 
 use common::User;
 use components::Leaderboard;
@@ -40,6 +41,7 @@ fn app() -> Html {
         Quiz::NumberComparison,
         Quiz::SixRounding,
         Quiz::SixAverage,
+        Quiz::SixMedian,
     ]);
 
     let course = use_state(|| Quiz::NoCourse);

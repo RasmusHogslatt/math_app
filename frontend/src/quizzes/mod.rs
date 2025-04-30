@@ -12,3 +12,5 @@ pub mod six_rounding;
 pub use six_rounding::*;
 pub mod six_average;
 pub use six_average::*;
+pub mod six_median;
+pub use six_median::*;

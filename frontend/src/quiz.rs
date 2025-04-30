@@ -1,4 +1,4 @@
-use crate::quizzes::*;
+use crate::{quizzes::*, util::validate_input};
 use std::fmt::{self, Display};
 
 // --- ADDING A NEW QUIZ CHECKLIST ---
@@ -35,6 +35,7 @@ pub enum Quiz {
     NumberComparison,
     SixRounding,
     SixAverage,
+    SixMedian,
 }
 
 impl Display for Quiz {
@@ -54,6 +55,7 @@ impl Display for Quiz {
             Quiz::NumberComparison => write!(f, "Number Comparison"),
             Quiz::SixRounding => write!(f, "Rounding"),
             Quiz::SixAverage => write!(f, "Average"),
+            Quiz::SixMedian => write!(f, "Median"),
         }
     }
 }
@@ -72,6 +74,7 @@ impl std::str::FromStr for Quiz {
             "Number Comparison" => Ok(Quiz::NumberComparison),
             "Rounding" => Ok(Quiz::SixRounding),
             "Average" => Ok(Quiz::SixAverage),
+            "Median" => Ok(Quiz::SixMedian),
             _ => Ok(Quiz::NoCourse),
         }
     }
@@ -90,6 +93,7 @@ impl Quiz {
             Quiz::NumberComparison => Difficulty::YearTwo,
             Quiz::SixRounding => Difficulty::YearSix,
             Quiz::SixAverage => Difficulty::YearSix,
+            Quiz::SixMedian => Difficulty::YearSix,
         }
     }
 }
@@ -98,7 +102,7 @@ pub trait Question {
     fn prompt(&self) -> String;
     fn answer(&self) -> &str;
     fn check_answer(&self, answer: &str) -> bool {
-        self.answer() == answer
+        validate_input(self.answer(), answer)
     }
 
     // Helper method to display the question nicely
@@ -116,6 +120,7 @@ pub enum QuestionBox {
     NumberComparison(NumberComparisonQuestion),
     SixRounding(SixRoundingQuestion),
     SixAverage(SixAverageQuestion),
+    SixMedian(SixMedianQuestion),
 }
 
 impl Question for QuestionBox {
@@ -128,6 +133,7 @@ impl Question for QuestionBox {
             QuestionBox::NumberComparison(q) => q.prompt(),
             QuestionBox::SixRounding(q) => q.prompt(),
             QuestionBox::SixAverage(q) => q.prompt(),
+            QuestionBox::SixMedian(q) => q.prompt(),
         }
     }
 
@@ -140,6 +146,7 @@ impl Question for QuestionBox {
             QuestionBox::NumberComparison(q) => q.answer(),
             QuestionBox::SixRounding(q) => q.answer(),
             QuestionBox::SixAverage(q) => q.answer(),
+            QuestionBox::SixMedian(q) => q.answer(),
         }
     }
 
@@ -152,6 +159,7 @@ impl Question for QuestionBox {
             QuestionBox::NumberComparison(q) => q.check_answer(answer),
             QuestionBox::SixRounding(q) => q.check_answer(answer),
             QuestionBox::SixAverage(q) => q.check_answer(answer),
+            QuestionBox::SixMedian(q) => q.check_answer(answer),
         }
     }
 }
@@ -178,6 +186,7 @@ pub fn generate_questions(quiz_type: Quiz, count: usize) -> Vec<QuestionBox> {
             }
             Quiz::SixRounding => QuestionBox::SixRounding(SixRoundingQuestion::random()),
             Quiz::SixAverage => QuestionBox::SixAverage(SixAverageQuestion::random()),
+            Quiz::SixMedian => QuestionBox::SixMedian(SixMedianQuestion::random()),
         };
 
         questions.push(question);

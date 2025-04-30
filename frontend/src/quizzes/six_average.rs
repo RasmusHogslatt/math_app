@@ -1,6 +1,6 @@
 use rand::Rng;
 
-use crate::quiz::Question;
+use crate::{quiz::Question, util::format_to_one_decimal};
 
 const AVERAGE_NUMBERS_COUNT_RANGE: (u32, u32) = (4, 6);
 
@@ -15,7 +15,7 @@ impl SixAverageQuestion {
         let average: f32 = numbers.iter().sum::<i32>() as f32 / numbers.len() as f32;
         Self {
             numbers,
-            answer: average.to_string(),
+            answer: format_to_one_decimal(average),
         }
     }
 
