@@ -34,6 +34,7 @@ pub enum Quiz {
     FirstDegreeDerivativeQuestion,
     NumberComparison,
     SixRounding,
+    SixAverage,
 }
 
 impl Display for Quiz {
@@ -52,6 +53,7 @@ impl Display for Quiz {
             }
             Quiz::NumberComparison => write!(f, "Number Comparison"),
             Quiz::SixRounding => write!(f, "Rounding"),
+            Quiz::SixAverage => write!(f, "Average"),
         }
     }
 }
@@ -69,6 +71,7 @@ impl std::str::FromStr for Quiz {
             "First Degree Derivative" => Ok(Quiz::FirstDegreeDerivativeQuestion),
             "Number Comparison" => Ok(Quiz::NumberComparison),
             "Rounding" => Ok(Quiz::SixRounding),
+            "Average" => Ok(Quiz::SixAverage),
             _ => Ok(Quiz::NoCourse),
         }
     }
@@ -86,6 +89,7 @@ impl Quiz {
             Quiz::FirstDegreeDerivativeQuestion => Difficulty::YearThree,
             Quiz::NumberComparison => Difficulty::YearTwo,
             Quiz::SixRounding => Difficulty::YearSix,
+            Quiz::SixAverage => Difficulty::YearSix,
         }
     }
 }
@@ -111,6 +115,7 @@ pub enum QuestionBox {
     FirstDegreeDerivativeQuestion(FirstDegreeDerivativeQuestion),
     NumberComparison(NumberComparisonQuestion),
     SixRounding(SixRoundingQuestion),
+    SixAverage(SixAverageQuestion),
 }
 
 impl Question for QuestionBox {
@@ -122,6 +127,7 @@ impl Question for QuestionBox {
             QuestionBox::FirstDegreeDerivativeQuestion(q) => q.prompt(),
             QuestionBox::NumberComparison(q) => q.prompt(),
             QuestionBox::SixRounding(q) => q.prompt(),
+            QuestionBox::SixAverage(q) => q.prompt(),
         }
     }
 
@@ -133,6 +139,7 @@ impl Question for QuestionBox {
             QuestionBox::FirstDegreeDerivativeQuestion(q) => q.answer(),
             QuestionBox::NumberComparison(q) => q.answer(),
             QuestionBox::SixRounding(q) => q.answer(),
+            QuestionBox::SixAverage(q) => q.answer(),
         }
     }
 
@@ -144,6 +151,7 @@ impl Question for QuestionBox {
             QuestionBox::FirstDegreeDerivativeQuestion(q) => q.check_answer(answer),
             QuestionBox::NumberComparison(q) => q.check_answer(answer),
             QuestionBox::SixRounding(q) => q.check_answer(answer),
+            QuestionBox::SixAverage(q) => q.check_answer(answer),
         }
     }
 }
@@ -169,6 +177,7 @@ pub fn generate_questions(quiz_type: Quiz, count: usize) -> Vec<QuestionBox> {
                 QuestionBox::NumberComparison(NumberComparisonQuestion::random())
             }
             Quiz::SixRounding => QuestionBox::SixRounding(SixRoundingQuestion::random()),
+            Quiz::SixAverage => QuestionBox::SixAverage(SixAverageQuestion::random()),
         };
 
         questions.push(question);

@@ -10,3 +10,5 @@ pub mod number_comparison;
 pub use number_comparison::*;
 pub mod six_rounding;
 pub use six_rounding::*;
+pub mod six_average;
+pub use six_average::*;
