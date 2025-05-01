@@ -24,10 +24,6 @@ impl SevenPercentChangeQuestion {
         let change: f32 = current_price as f32 * percent_change as f32 / 100.0;
         let new_price: f32 = current_price as f32 + change;
         let answer = format_to_one_decimal(new_price as f32);
-        log!(&format!(
-            "Current Price: {}, Percentage Change: {}, Change: {}, New Price: {}",
-            current_price, percent_change, change, answer
-        ));
 
         Self {
             current_price,
