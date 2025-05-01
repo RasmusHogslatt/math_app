@@ -30,12 +30,13 @@ pub enum Quiz {
     Subtraction,
     Multiplication,
     SquareArea,
-    FirstOrderEquationQuestion,
+    SevenFirstOrderEquation,
     FirstDegreeDerivativeQuestion,
     NumberComparison,
     SixRounding,
     SixAverage,
     SixMedian,
+    SevenPercentChange,
 }
 
 impl Display for Quiz {
@@ -46,7 +47,7 @@ impl Display for Quiz {
             Quiz::Subtraction => write!(f, "Subtraction"),
             Quiz::Multiplication => write!(f, "Multiplication"),
             Quiz::SquareArea => write!(f, "Area"),
-            Quiz::FirstOrderEquationQuestion => {
+            Quiz::SevenFirstOrderEquation => {
                 write!(f, "First Order Equation")
             }
             Quiz::FirstDegreeDerivativeQuestion => {
@@ -56,6 +57,7 @@ impl Display for Quiz {
             Quiz::SixRounding => write!(f, "Rounding"),
             Quiz::SixAverage => write!(f, "Average"),
             Quiz::SixMedian => write!(f, "Median"),
+            Quiz::SevenPercentChange => write!(f, "Percent Change"),
         }
     }
 }
@@ -69,12 +71,13 @@ impl std::str::FromStr for Quiz {
             "Subtraction" => Ok(Quiz::Subtraction),
             "Multiplication" => Ok(Quiz::Multiplication),
             "Square Area" => Ok(Quiz::SquareArea),
-            "First Order Equation" => Ok(Quiz::FirstOrderEquationQuestion),
+            "First Order Equation" => Ok(Quiz::SevenFirstOrderEquation),
             "First Degree Derivative" => Ok(Quiz::FirstDegreeDerivativeQuestion),
             "Number Comparison" => Ok(Quiz::NumberComparison),
             "Rounding" => Ok(Quiz::SixRounding),
             "Average" => Ok(Quiz::SixAverage),
             "Median" => Ok(Quiz::SixMedian),
+            "Percent Change" => Ok(Quiz::SevenPercentChange),
             _ => Ok(Quiz::NoCourse),
         }
     }
@@ -88,12 +91,13 @@ impl Quiz {
             Quiz::Subtraction => Difficulty::YearOne,
             Quiz::Multiplication => Difficulty::YearOne,
             Quiz::SquareArea => Difficulty::YearTwo,
-            Quiz::FirstOrderEquationQuestion => Difficulty::YearThree,
+            Quiz::SevenFirstOrderEquation => Difficulty::YearSeven,
             Quiz::FirstDegreeDerivativeQuestion => Difficulty::YearThree,
             Quiz::NumberComparison => Difficulty::YearTwo,
             Quiz::SixRounding => Difficulty::YearSix,
             Quiz::SixAverage => Difficulty::YearSix,
             Quiz::SixMedian => Difficulty::YearSix,
+            Quiz::SevenPercentChange => Difficulty::YearSeven,
         }
     }
 }
@@ -115,12 +119,13 @@ pub trait Question {
 pub enum QuestionBox {
     Math(MathQuestion),
     Area(AreaQuestion),
-    FirstOrderEquationQuestion(FirstOrderEquationQuestion),
+    FirstOrderEquationQuestion(SevenFirstOrderEquationQuestion),
     FirstDegreeDerivativeQuestion(FirstDegreeDerivativeQuestion),
     NumberComparison(NumberComparisonQuestion),
     SixRounding(SixRoundingQuestion),
     SixAverage(SixAverageQuestion),
     SixMedian(SixMedianQuestion),
+    SevenPercentChange(SevenPercentChangeQuestion),
 }
 
 impl Question for QuestionBox {
@@ -134,6 +139,7 @@ impl Question for QuestionBox {
             QuestionBox::SixRounding(q) => q.prompt(),
             QuestionBox::SixAverage(q) => q.prompt(),
             QuestionBox::SixMedian(q) => q.prompt(),
+            QuestionBox::SevenPercentChange(q) => q.prompt(),
         }
     }
 
@@ -147,6 +153,7 @@ impl Question for QuestionBox {
             QuestionBox::SixRounding(q) => q.answer(),
             QuestionBox::SixAverage(q) => q.answer(),
             QuestionBox::SixMedian(q) => q.answer(),
+            QuestionBox::SevenPercentChange(q) => q.answer(),
         }
     }
 
@@ -160,6 +167,7 @@ impl Question for QuestionBox {
             QuestionBox::SixRounding(q) => q.check_answer(answer),
             QuestionBox::SixAverage(q) => q.check_answer(answer),
             QuestionBox::SixMedian(q) => q.check_answer(answer),
+            QuestionBox::SevenPercentChange(q) => q.check_answer(answer),
         }
     }
 }
@@ -175,8 +183,8 @@ pub fn generate_questions(quiz_type: Quiz, count: usize) -> Vec<QuestionBox> {
             }
             Quiz::SquareArea => QuestionBox::Area(AreaQuestion::random()),
             Quiz::NoCourse => QuestionBox::Math(MathQuestion::new(0, 0, Quiz::NoCourse)),
-            Quiz::FirstOrderEquationQuestion => {
-                QuestionBox::FirstOrderEquationQuestion(FirstOrderEquationQuestion::random())
+            Quiz::SevenFirstOrderEquation => {
+                QuestionBox::FirstOrderEquationQuestion(SevenFirstOrderEquationQuestion::random())
             }
             Quiz::FirstDegreeDerivativeQuestion => {
                 QuestionBox::FirstDegreeDerivativeQuestion(FirstDegreeDerivativeQuestion::random())
@@ -187,6 +195,9 @@ pub fn generate_questions(quiz_type: Quiz, count: usize) -> Vec<QuestionBox> {
             Quiz::SixRounding => QuestionBox::SixRounding(SixRoundingQuestion::random()),
             Quiz::SixAverage => QuestionBox::SixAverage(SixAverageQuestion::random()),
             Quiz::SixMedian => QuestionBox::SixMedian(SixMedianQuestion::random()),
+            Quiz::SevenPercentChange => {
+                QuestionBox::SevenPercentChange(SevenPercentChangeQuestion::random())
+            }
         };
 
         questions.push(question);

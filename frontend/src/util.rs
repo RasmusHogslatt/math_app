@@ -22,43 +22,39 @@ pub fn validate_input(expected_answer: &str, user_answer: &str) -> bool {
         return true;
     }
 
-    // Parse both as f32 first to see if they're numerically equivalent
+    // Try to parse as f32 to handle numeric equivalence
     if let (Ok(expected_value), Ok(user_value)) =
         (expected_answer.parse::<f32>(), user_answer.parse::<f32>())
     {
         // Check if they're essentially the same number
-        // This handles cases where one is "7" and the other is "7.0"
         if (expected_value - user_value).abs() < 0.0001 {
             return true;
         }
     }
 
-    // Handle the specific case of whole numbers
-    if expected_answer.find('.').is_none() {
-        // Expected is a whole number like "7"
-        // Check if user input is that number with ".0" appended
-        if let Some(decimal_idx) = user_answer.find('.') {
-            let before_decimal = &user_answer[0..decimal_idx];
-            let after_decimal = &user_answer[decimal_idx + 1..];
+    // Handle cases where there might be different decimal representations
+    let normalized_expected = normalize_number_format(expected_answer);
+    let normalized_user = normalize_number_format(user_answer);
 
-            // If user entered something like "7.0" and expected is "7"
-            if before_decimal == expected_answer && after_decimal.chars().all(|c| c == '0') {
-                return true;
-            }
-        }
-    } else {
-        // Expected has a decimal point
-        // Check if user didn't include decimal point for numbers like "7.0"
-        if let Some(decimal_idx) = expected_answer.find('.') {
-            let before_decimal = &expected_answer[0..decimal_idx];
-            let after_decimal = &expected_answer[decimal_idx + 1..];
-
-            // If expected is like "7.0" and user entered "7"
-            if after_decimal.chars().all(|c| c == '0') && before_decimal == user_answer {
-                return true;
-            }
-        }
+    if normalized_expected == normalized_user {
+        return true;
     }
 
     false
+}
+
+fn normalize_number_format(number_str: &str) -> String {
+    if let Ok(value) = number_str.parse::<f32>() {
+        // Format all numbers consistently
+        if value.fract() < 0.0001 {
+            // It's essentially a whole number
+            return format!("{}", value.round() as i32);
+        } else {
+            // It has a fractional part - format with 1 decimal place
+            return format!("{:.1}", value);
+        }
+    }
+
+    // If parsing fails, return the original string
+    number_str.to_string()
 }
