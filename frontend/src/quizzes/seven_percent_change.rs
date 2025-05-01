@@ -2,10 +2,20 @@ use crate::{quiz::Question, util::format_to_one_decimal};
 use gloo::console::log;
 use rand::Rng;
 
+static ITEMS: [&str; 6] = [
+    "Donald Duck comic book",
+    "Nintendo Switch 2",
+    "Tesla Cybertruck",
+    "iPhone 16",
+    "PlayStation 5",
+    "Minecraft account",
+];
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct SevenPercentChangeQuestion {
     current_price: i32,
     percentage_change: i32,
+    item: String,
     answer: String,
 }
 
@@ -18,8 +28,10 @@ impl SevenPercentChangeQuestion {
             "Current Price: {}, Percentage Change: {}, Change: {}, New Price: {}",
             current_price, percent_change, change, answer
         ));
+
         Self {
             current_price,
+            item: get_random_item(),
             percentage_change: percent_change,
             answer,
         }
@@ -37,12 +49,12 @@ impl Question for SevenPercentChangeQuestion {
     fn prompt(&self) -> String {
         match self.percentage_change {
             change if change > 0 => format!(
-                "If the current price is {} and it increases by {}%, what will be the new price?",
-                self.current_price, self.percentage_change
+                "The price of {} is {}.  It increases by {}%, what is the new price?",
+                self.item, self.current_price, self.percentage_change
             ),
             change if change < 0 => format!(
-                "If the current price is {} and it decreases by {}%, what will be the new price?",
-                self.current_price, -self.percentage_change
+                "The price of {} is {}.  It decreases by {}%, what is the new price?",
+                self.item, self.current_price, -self.percentage_change
             ),
             _ => format!("What is the current price?"),
         }
@@ -51,4 +63,10 @@ impl Question for SevenPercentChangeQuestion {
     fn answer(&self) -> &str {
         &self.answer
     }
+}
+
+fn get_random_item() -> String {
+    let mut rng = rand::rng();
+    let index: usize = rng.random_range(0..ITEMS.len());
+    ITEMS[index].to_string()
 }
