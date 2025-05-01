@@ -16,3 +16,5 @@ pub mod six_median;
 pub use six_median::*;
 pub mod seven_percent_change;
 pub use seven_percent_change::*;
+pub mod eight_expressions;
+pub use eight_expressions::*;

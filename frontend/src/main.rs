@@ -43,6 +43,7 @@ fn app() -> Html {
         Quiz::SixAverage,
         Quiz::SixMedian,
         Quiz::SevenPercentChange,
+        Quiz::EightExpression,
     ]);
 
     let course = use_state(|| Quiz::NoCourse);
