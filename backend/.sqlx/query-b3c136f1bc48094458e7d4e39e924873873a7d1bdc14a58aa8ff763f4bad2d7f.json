@@ -1,0 +1,61 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT id, name, course, school, school_id, time_seconds, completed_at\n        FROM leaderboard\n        WHERE course = $1\n          AND school = $2    -- Filter by school\n          AND school_id = $3 -- Filter by school_id\n        ORDER BY time_seconds ASC, completed_at DESC -- Use new index fields\n        LIMIT $4             -- Limit parameter is now $4\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "course",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "school",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "school_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 5,
+        "name": "time_seconds",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 6,
+        "name": "completed_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Uuid",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "b3c136f1bc48094458e7d4e39e924873873a7d1bdc14a58aa8ff763f4bad2d7f"
+}

@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT id, time_seconds\n        FROM leaderboard\n        WHERE course = $1\n        AND school_id = $2\n        ORDER BY time_seconds DESC -- Worst score first\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "time_seconds",
+        "type_info": "Float8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "9b7ca3939f62a28775a297c05befca70c6e0ca30038f56d7d184917e57eb035b"
+}

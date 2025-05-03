@@ -47,6 +47,8 @@ jobs:
     - name: Build Backend (Release)
       # Build only the specific backend binary needed for deployment
       run: cd backend && cargo build --release --bin ${{ env.BACKEND_BINARY_NAME }}
+      env:
+        SQLX_OFFLINE: "true" # Use metadata from local database for SQLx (if applicable)
 
     - name: Prepare deployment package
       run: |
