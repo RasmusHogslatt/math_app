@@ -37,20 +37,16 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-cargo-
 
-    - name: Check if Trunk is installed
-      id: check-trunk
-      run: |
-        if command -v ~/.cargo/bin/trunk &> /dev/null && command -v ~/.cargo/bin/wasm-bindgen &> /dev/null; then
-          echo "Trunk and wasm-bindgen are already available"
-          echo "tools-installed=true" >> $GITHUB_OUTPUT
-        else
-          echo "Need to install Trunk and/or wasm-bindgen"
-          echo "tools-installed=false" >> $GITHUB_OUTPUT
-        fi
+    - name: Install Trunk
+      uses: baptiste0928/cargo-install@v3
+      with:
+        crate: trunk
+        locked: true
 
-    - name: Install Trunk and wasm-bindgen-cli
-      if: steps.check-trunk.outputs.tools-installed != 'true'
-      run: cargo install --locked trunk wasm-bindgen-cli
+    - name: Install wasm-bindgen-cli
+      uses: baptiste0928/cargo-install@v3
+      with:
+        crate: wasm-bindgen-cli
 
     - name: Build Frontend (Trunk)
       # Ensure assets are referenced correctly relative to the domain root
