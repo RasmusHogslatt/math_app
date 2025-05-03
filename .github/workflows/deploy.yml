@@ -22,6 +22,7 @@ jobs:
       uses: dtolnay/rust-toolchain@stable
       with:
         toolchain: stable # Or specify your Rust version
+        targets: wasm32-unknown-unknown
 
     - name: Cache Cargo dependencies
       uses: actions/cache@v4
