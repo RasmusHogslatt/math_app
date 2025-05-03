@@ -4,7 +4,7 @@ on:
   push:
     # IMPORTANT: Changed from 'master' to 'main' based on common practice.
     # Update this if your main branch is indeed named 'master'.
-    branches: [ main ]
+    branches: [ master ]
 
 env:
   # Define environment variables used across jobs/steps
