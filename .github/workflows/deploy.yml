@@ -1,0 +1,138 @@
+name: Deploy Rust App to Droplet
+
+on:
+  push:
+    branches: [ master ] # Trigger deployment only on pushes to the master branch
+
+env:
+  # Define environment variables used across jobs/steps
+  APP_DIR: /var/www/math_app # Deployment directory on the server
+  BACKEND_BINARY_NAME: backend # Match the binary name produced by cargo build
+  SERVICE_NAME: math_app.service # Name of the systemd service
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest # Use an Ubuntu runner in GitHub Actions
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable # Or specify your Rust version
+
+    - name: Cache Cargo dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          target/ # Cache the build target directory
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-cargo-
+
+    - name: Install Trunk
+      run: cargo install --locked trunk wasm-bindgen-cli
+
+    - name: Build Frontend (Trunk)
+      # Ensure assets are referenced correctly relative to the domain root
+      run: cd frontend && trunk build --release --public-url /
+
+    - name: Build Backend (Release)
+      # Build only the specific backend binary needed for deployment
+      run: cd backend && cargo build --release --bin ${{ env.BACKEND_BINARY_NAME }}
+
+    - name: Prepare deployment package
+      run: |
+        mkdir deploy_package
+        # Copy backend binary (adjust path based on workspace structure and binary name)
+        cp backend/target/release/${{ env.BACKEND_BINARY_NAME }} deploy_package/
+        # Copy frontend build artifacts
+        cp -r frontend/dist deploy_package/
+        # Optional: Copy other necessary files (e.g., .env.production if needed, though systemd Env is better)
+        # cp .env.production deploy_package/.env
+
+    - name: Deploy to Server via SSH
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          # Ensure the app directory exists
+          mkdir -p ${{ env.APP_DIR }}
+
+          # Stop the service before deploying new files
+          echo "Stopping service ${{ env.SERVICE_NAME }}..."
+          sudo systemctl stop ${{ env.SERVICE_NAME }} || echo "Service already stopped or not found."
+
+          # Upload files (Using scp within ssh-action context)
+          # Note: This requires configuring ssh-agent or using a simpler scp action if preferred.
+          # A simpler alternative is using appleboy/scp-action before this step.
+
+          # Alternative using rsync (often more efficient) - requires rsync on runner and server
+          # echo "Syncing files via rsync..."
+          # rsync -avz --delete ./deploy_package/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ env.APP_DIR }}/
+
+          # --- Let's use scp action *before* this step for simplicity ---
+          # (See next step below)
+
+          # --- Commands to run AFTER files are copied ---
+          echo "Extracting deployment package (if using tarball)..."
+          # Example if using tar: tar xzf /tmp/deploy_package.tar.gz -C ${{ env.APP_DIR }}
+          # If copying directly (like the rsync example), this isn't needed.
+
+          echo "Setting permissions..."
+          # Example: Ensure binary is executable
+          chmod +x ${{ env.APP_DIR }}/${{ env.BACKEND_BINARY_NAME }}
+          # Example: Ensure web server can read frontend files (adjust user/group if needed)
+          sudo chown -R www-data:www-data ${{ env.APP_DIR }}/dist || echo "Dist directory owner unchanged (might be correct already)."
+
+          echo "Restarting service ${{ env.SERVICE_NAME }}..."
+          sudo systemctl restart ${{ env.SERVICE_NAME }}
+
+          echo "Checking service status..."
+          sudo systemctl status ${{ env.SERVICE_NAME }} --no-pager # Show status without paging
+
+
+    # --- Use scp-action for reliable file transfer ---
+    - name: Copy files via SCP
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        source: "./deploy_package/*" # Copy contents of the package directory
+        target: ${{ env.APP_DIR }}
+        strip_components: 1 # Removes the 'deploy_package' directory layer during copy
+        overwrite: true
+
+    # --- Re-run the SSH Action for server-side commands after SCP ---
+    - name: Run server-side commands (Restart Service)
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          echo "Setting permissions..."
+          # Ensure binary is executable
+          chmod +x ${{ env.APP_DIR }}/${{ env.BACKEND_BINARY_NAME }}
+          # Ensure correct ownership for web server (if needed, depends on Nginx user)
+          # If Nginx runs as www-data, it needs read access to dist/
+          # The deploy user needs execute access to the binary
+          sudo chown -R ${{ secrets.SSH_USER }}:${{ secrets.SSH_USER }} ${{ env.APP_DIR }} # Ownership for the deploy/service user
+          sudo chmod +r -R ${{ env.APP_DIR }}/dist # Ensure everyone can read static files (or adjust for www-data group)
+
+          echo "Restarting service ${{ env.SERVICE_NAME }}..."
+          sudo systemctl restart ${{ env.SERVICE_NAME }}
+
+          echo "Checking service status..."
+          sleep 5 # Give service a moment to start
+          sudo systemctl status ${{ env.SERVICE_NAME }} --no-pager # Show status without paging
+          echo "Deployment complete!"
