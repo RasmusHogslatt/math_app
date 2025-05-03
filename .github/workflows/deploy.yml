@@ -54,7 +54,7 @@ jobs:
       run: |
         mkdir deploy_package
         # Copy backend binary (adjust path based on workspace structure and binary name)
-        cp backend/target/release/${{ env.BACKEND_BINARY_NAME }} deploy_package/
+        cp target/release/${{ env.BACKEND_BINARY_NAME }} deploy_package/
         # Copy frontend build artifacts
         cp -r frontend/dist deploy_package/
         # Optional: Copy other necessary files (e.g., .env.production if needed, though systemd Env is better)
