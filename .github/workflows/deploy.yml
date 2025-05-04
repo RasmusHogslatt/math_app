@@ -39,8 +39,17 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-cargo-
 
-    - name: Install Trunk and wasm-bindgen-cli
-      run: cargo install --locked --force trunk wasm-bindgen-cli
+    #- name: Install Trunk and wasm-bindgen-cli
+     # run: cargo install --locked --force trunk wasm-bindgen-cli
+    - name: Install Trunk and wasm-bindgen-cli if missing
+      run: |
+       if ! command -v trunk &> /dev/null || ! command -v wasm-bindgen &> /dev/null
+       then
+         echo "Installing missing tools..."
+         cargo install --locked trunk wasm-bindgen-cli
+       else
+         echo "Trunk and wasm-bindgen already found in PATH (likely from cache)."
+       fi
 
     - name: Build Frontend (Trunk)
       # Ensure assets are referenced correctly relative to the domain root
