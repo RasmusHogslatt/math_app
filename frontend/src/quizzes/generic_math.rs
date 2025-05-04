@@ -55,12 +55,12 @@ impl MathQuestion {
 impl Question for MathQuestion {
     fn prompt(&self) -> String {
         match self.operation {
-            Quiz::Addition => format!("What is {} + {}?", self.first_number, self.second_number),
-            Quiz::Subtraction => format!("What is {} - {}?", self.first_number, self.second_number),
+            Quiz::Addition => format!("Beräkna {} + {}?", self.first_number, self.second_number),
+            Quiz::Subtraction => format!("Beräkna {} - {}?", self.first_number, self.second_number),
             Quiz::Multiplication => {
-                format!("What is {} × {}?", self.first_number, self.second_number)
+                format!("Beräkna {} × {}?", self.first_number, self.second_number)
             }
-            _ => "Not applicable".to_string(),
+            _ => "Något gick fel".to_string(),
         }
     }
 

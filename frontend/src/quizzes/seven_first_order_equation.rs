@@ -63,7 +63,7 @@ impl Question for SevenFirstOrderEquationQuestion {
     fn prompt(&self) -> String {
         // Format the equation nicely
         format!(
-            "Solve for x: {}x {} {} = {}",
+            "Beräkna x: {}x {} {} = {}",
             self.coefficient, self.operation, self.constant_left, self.constant_right
         )
     }

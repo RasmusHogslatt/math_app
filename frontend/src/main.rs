@@ -5,6 +5,7 @@ mod quizzes;
 mod util;
 
 use common::User;
+use components::_QuizSelectionProps::selected;
 use components::Leaderboard;
 use components::QuizSelect;
 use components::QuizSession;
@@ -130,42 +131,31 @@ fn app() -> Html {
         let app_state = app_state.clone();
         let elapsed_time = elapsed_time.clone();
         let interval_ref = interval_ref.clone();
-        // --- Add failed_question_details state ---
         let failed_question_details = failed_question_details.clone();
-        // ------------------------------------------
 
         Callback::from(move |answer: String| {
             let current_q = *current_question;
             // Ensure we don't panic if questions isn't populated somehow
             if let Some(q) = (*questions).get(current_q) {
-                // Use the Question trait check_answer method
                 if q.check_answer(&answer) {
                     // Correct Answer Logic (no change)
                     if current_q + 1 >= total_questions {
                         if let Some(handle) = interval_ref.borrow_mut().take() {
                             handle.cancel();
                         }
-                        failed_question_details.set(None); // Clear any previous failure details
+                        failed_question_details.set(None);
                         app_state.set(AppState::Result(true, *elapsed_time));
                     } else {
                         current_question.set(current_q + 1);
                     }
                 } else {
-                    // --- Incorrect Answer Logic ---
                     if let Some(handle) = interval_ref.borrow_mut().take() {
                         handle.cancel();
                     }
-                    // Store the failed question and the user's incorrect answer
                     failed_question_details.set(Some((q.clone(), answer)));
                     app_state.set(AppState::Result(false, *elapsed_time));
-                    // -----------------------------
                 }
             } else {
-                // Handle case where question index is out of bounds (optional, good practice)
-                /*  console::error!("Error: Tried to access question index out of bounds."); */
-                // Optionally reset state or show an error message
-                // For now, just go back to selection? Or handle appropriately.
-                // Let's reset for safety, similar to restart
                 if let Some(handle) = interval_ref.borrow_mut().take() {
                     handle.cancel();
                 }
@@ -187,11 +177,9 @@ fn app() -> Html {
         let failed_question_details = failed_question_details.clone();
 
         Callback::from(move |_| {
-            // Cancel any ongoing interval
             if let Some(handle) = interval_ref.borrow_mut().take() {
                 handle.cancel();
             }
-            // Reset quiz-related states
             questions.set(Vec::new());
             current_question.set(0);
             elapsed_time.set(Duration::from_secs(0));
@@ -252,13 +240,13 @@ fn app() -> Html {
                     match (*app_state).clone() {
                         AppState::Selection => html! {
                             <div class="start-section">
-                                <h2>{"Get Ready for the Quiz"}</h2>
-                                <p>{"Select a course from the left and click Start when you're ready."}</p>
+                                <h2>{format!("{}", course.to_string())}</h2>
+                                <p>{"Välj en quiz i listan och klicka på Starta quiz när du är redo."}</p>
                                 <button
                                     onclick={on_start_quiz}
                                     disabled={*course == Quiz::NoCourse}
                                 >
-                                    {"Start Course"}
+                                    {"Starta quiz"}
                                 </button>
                             </div>
                         },
@@ -276,7 +264,7 @@ fn app() -> Html {
                                     />
                                 }
                             } else {
-                                html! { <p>{"Loading questions..."}</p> }
+                                html! { <p>{"Laddar frågor..."}</p> }
                             }
                         },
                         AppState::Result(passed, time_taken) => {

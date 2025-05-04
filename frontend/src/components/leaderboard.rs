@@ -58,7 +58,7 @@ pub fn leaderboard(props: &LeaderboardProps) -> Html {
                     match api::fetch_leaderboard(&course, &school, &school_id).await {
                         Ok(data) => fetch_state.set(FetchState::Success(data)),
                         Err(e) => {
-                            fetch_state.set(FetchState::Error(format!("Failed to load: {}", e)))
+                            fetch_state.set(FetchState::Error(format!("Kunde inte ladda: {}", e)))
                         }
                     }
                 });
@@ -107,9 +107,8 @@ pub fn leaderboard(props: &LeaderboardProps) -> Html {
                     // Refresh using the updated fetch_leaderboard call
                     match api::fetch_leaderboard(&course, &school, &school_id).await {
                         Ok(data) => fetch_state.set(FetchState::Success(data)),
-                        Err(e) => {
-                            fetch_state.set(FetchState::Error(format!("Failed to refresh: {}", e)))
-                        }
+                        Err(e) => fetch_state
+                            .set(FetchState::Error(format!("Kunde inte ladda om: {}", e))),
                     }
                 });
             }
@@ -138,21 +137,21 @@ pub fn leaderboard(props: &LeaderboardProps) -> Html {
             let name = if name_to_submit.is_empty() {
                 // Use name from User prop if input is empty? Or force input?
                 // user.name.clone()
-                "Anonymous" // Or keep forcing input like before
+                "Anonym" // Or keep forcing input like before
             } else {
                 name_to_submit
             };
 
             if name_to_submit.is_empty() {
                 // Keep validation if input required
-                submit_state.set(SubmitState::Error("Please enter your name".into()));
+                submit_state.set(SubmitState::Error("Ange ett namn".into()));
                 return;
             }
 
             let time = match user_time {
                 Some(t) => t,
                 None => {
-                    submit_state.set(SubmitState::Error("No valid time to submit".into()));
+                    submit_state.set(SubmitState::Error("Ingen tid finns".into()));
                     return;
                 }
             };
@@ -173,7 +172,8 @@ pub fn leaderboard(props: &LeaderboardProps) -> Html {
             spawn_local(async move {
                 match api::submit_score(&req).await {
                     Ok(()) => {
-                        submit_state.set(SubmitState::Success("Score submitted!".into()));
+                        submit_state
+                            .set(SubmitState::Success("Ditt resultat skickades in!".into()));
                         refresh_leaderboard.emit(());
                     }
                     Err(ApiError::Conflict(_)) => {
@@ -182,7 +182,10 @@ pub fn leaderboard(props: &LeaderboardProps) -> Html {
                         refresh_leaderboard.emit(());
                     }
                     Err(e) => {
-                        submit_state.set(SubmitState::Error(format!("Submission failed: {}", e)));
+                        submit_state.set(SubmitState::Error(format!(
+                            "Resultatet kunde inte skickas in: {}",
+                            e
+                        )));
                         // Consider resetting to Idle after a delay?
                     }
                 }
@@ -197,26 +200,25 @@ pub fn leaderboard(props: &LeaderboardProps) -> Html {
             *submit_state,
             SubmitState::Success(_) | SubmitState::AlreadySubmitted
         );
-
     html! {
         <div class="leaderboard-container">
-        <h2>{format!("{} Leaderboard", props.course)}</h2>
+        <h2>{format!("Topplista: {}", props.course)}</h2>
 
             // Submit score form
             if show_submit_form {
                 <div class="submit-score">
-                    <h3>{"Submit Your Score"}</h3>
-                    <p>{format!("Your time: {:.2} seconds", props.user_time.unwrap_or(0.0))}</p>
+                    <h3>{"Skicka in din tid"}</h3>
+                    <p>{format!("Din tid: {:.2} sekunder", props.user_time.unwrap_or(0.0))}</p>
                     <form onsubmit={handle_submit}>
                         <input
                             type="text"
-                            placeholder="Enter your name"
+                            placeholder="Ange ditt namn"
                             value={(*player_name).clone()}
                             oninput={handle_name_change}
                             disabled={*submit_state == SubmitState::Submitting}
                         />
                         <button type="submit" disabled={*submit_state == SubmitState::Submitting}>
-                            { if *submit_state == SubmitState::Submitting { "Submitting..." } else { "Submit Score" } }
+                            { if *submit_state == SubmitState::Submitting { "Skickar inte..." } else { "Skicka in" } }
                         </button>
                     </form>
                     {
@@ -232,22 +234,22 @@ pub fn leaderboard(props: &LeaderboardProps) -> Html {
                 <p class="status-message success">{msg}</p>
             } else if let SubmitState::AlreadySubmitted = *submit_state {
                 // Show already submitted message
-                <p class="status-message success">{"Score already submitted."}</p>
+                <p class="status-message success">{"Du har redan skickat in din tid."}</p>
             }
 
             // Leaderboard table
             {
                 match &*fetch_state {
-                    FetchState::Idle | FetchState::Loading => html!{ <p>{"Loading leaderboard..."}</p> },
-                    FetchState::Error(err) => html!{ <p class="error">{format!("Error loading leaderboard: {}", err)}</p> },
-                    FetchState::Success(entries) if entries.is_empty() => html!{ <p>{"No scores yet. Be the first to submit!"}</p> },
+                    FetchState::Idle | FetchState::Loading => html!{ <p>{"Laddar topplistan..."}</p> },
+                    FetchState::Error(err) => html!{ <p class="error">{format!("Kunde inte ladda topplista: {}", err)}</p> },
+                    FetchState::Success(entries) if entries.is_empty() => html!{ <p>{"Ingen har skickat in ännu. Du kan bli nummer ett!"}</p> },
                     FetchState::Success(entries) => html! {
                         <table class="leaderboard-table">
                             <thead>
                                 <tr>
                                     <th>{"Rank"}</th>
-                                    <th>{"Name"}</th>
-                                    <th>{"Time (seconds)"}</th>
+                                    <th>{"Namn"}</th>
+                                    <th>{"Tid (sekunder)"}</th>
                                 </tr>
                             </thead>
                             <tbody>

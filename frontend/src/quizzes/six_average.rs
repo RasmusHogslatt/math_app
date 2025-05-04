@@ -30,7 +30,7 @@ impl SixAverageQuestion {
 
 impl Question for SixAverageQuestion {
     fn prompt(&self) -> String {
-        format!("What is the average of: {:?}", self.numbers)
+        format!("Beräkna medelvärdet: {:?}", self.numbers)
     }
 
     fn answer(&self) -> &str {

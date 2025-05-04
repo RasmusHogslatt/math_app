@@ -15,10 +15,10 @@ pub enum ShapeType {
 impl fmt::Display for ShapeType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            ShapeType::Square => write!(f, "square"),
-            ShapeType::Rectangle => write!(f, "rectangle"),
-            ShapeType::Triangle => write!(f, "triangle"),
-            ShapeType::Circle => write!(f, "circle"),
+            ShapeType::Square => write!(f, "kvadrat"),
+            ShapeType::Rectangle => write!(f, "rektangel"),
+            ShapeType::Triangle => write!(f, "triangel"),
+            ShapeType::Circle => write!(f, "cirkel"),
         }
     }
 }
@@ -86,7 +86,7 @@ impl AreaQuestion {
 
     pub fn random() -> Self {
         let mut rng = rand::rng();
-        let units = ["centimeters", "meters", "inches"];
+        let units = ["cm", "m"];
         let unit = units[rng.random_range(0..units.len())];
 
         // Randomly select which shape to generate
@@ -122,25 +122,25 @@ impl Question for AreaQuestion {
         match &self.dimensions {
             ShapeDimensions::Square { side } => {
                 format!(
-                    "What is the area of a square with sides of {} {}?",
+                    "Beräkna area av en kvadrat med sidan: {}{}?",
                     side, self.unit
                 )
             }
             ShapeDimensions::Rectangle { length, width } => {
                 format!(
-                    "What is the area of a rectangle with length {} {} and width {} {}?",
+                    "Beräkna area av en rektangel sidorna {}{} och {}{}?",
                     length, self.unit, width, self.unit
                 )
             }
             ShapeDimensions::Triangle { base, height } => {
                 format!(
-                    "What is the area of a triangle with base {} {} and height {} {}?",
+                    "Beräkna area av en triangel med bas {}{} och höjd {}{}?",
                     base, self.unit, height, self.unit
                 )
             }
             ShapeDimensions::Circle { radius } => {
                 format!(
-                    "What is the area of a circle with radius {} {}? (Round to the nearest whole number)",
+                    "Beräkna area av en cirkel med radien {}{}? (Närmaste heltal)",
                     radius, self.unit
                 )
             }

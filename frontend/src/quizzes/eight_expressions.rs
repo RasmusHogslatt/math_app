@@ -47,7 +47,7 @@ impl Question for EightExpressionQuestion {
     fn prompt(&self) -> String {
         let sign = if self.sign { "+" } else { "-" };
         format!(
-            "What is the result of: {}x {} {}y, where x={} and y={}?",
+            "Beräkna uttryckets värde: {}x {} {}y, where x={} and y={}?",
             self.x_factor, sign, self.y_factor, self.x_value, self.y_value
         )
     }

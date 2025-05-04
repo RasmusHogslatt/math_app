@@ -39,7 +39,7 @@ impl SixMedianQuestion {
 
 impl Question for SixMedianQuestion {
     fn prompt(&self) -> String {
-        format!("What is the median of: {:?}", self.numbers)
+        format!("Beräkna medianen: {:?}", self.numbers)
     }
 
     fn answer(&self) -> &str {

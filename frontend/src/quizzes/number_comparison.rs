@@ -142,14 +142,14 @@ impl NumberComparisonQuestion {
 
 impl Question for NumberComparisonQuestion {
     fn prompt(&self) -> String {
-        "Click on the larger value:".to_string()
+        "Vilket värde är störst".to_string()
     }
 
     fn answer(&self) -> &str {
         match self.correct_answer {
-            0 => "left",
-            1 => "right",
-            _ => "equal", // This shouldn't happen as we ensure they're not equal
+            0 => "vänster",
+            1 => "höger",
+            _ => "lika", // This shouldn't happen as we ensure they're not equal
         }
     }
 
@@ -165,7 +165,7 @@ impl Question for NumberComparisonQuestion {
     // Override display to customize the output
     fn display(&self) -> String {
         format!(
-            "Which number is larger: {} or {}?",
+            "Vilket värde är störst: {} eller {}?",
             self.first_value.display(),
             self.second_value.display()
         )

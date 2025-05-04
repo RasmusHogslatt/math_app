@@ -136,7 +136,7 @@ impl FirstDegreeDerivativeQuestion {
 
 impl Question for FirstDegreeDerivativeQuestion {
     fn prompt(&self) -> String {
-        format!("Find the derivative of f(x) = {}", self.format_original())
+        format!("Beräkna f'(x): f(x) = {}", self.format_original())
     }
 
     fn answer(&self) -> &str {

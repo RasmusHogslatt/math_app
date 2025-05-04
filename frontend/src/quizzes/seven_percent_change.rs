@@ -44,14 +44,17 @@ impl Question for SevenPercentChangeQuestion {
     fn prompt(&self) -> String {
         match self.percentage_change {
             change if change > 0 => format!(
-                "The price of {} is {}.  It increases by {}%, what is the new price?",
+                "{} kostar {}kr. Priset höjs med {}%. Beräkna det nya priset.",
                 self.item, self.current_price, self.percentage_change
             ),
             change if change < 0 => format!(
-                "The price of {} is {}.  It decreases by {}%, what is the new price?",
+                "{} kostar {}kr. Priset sänks med {}%. Beräkna det nya priset.",
                 self.item, self.current_price, -self.percentage_change
             ),
-            _ => format!("What is the current price?"),
+            _ => format!(
+                "Vad är det nya priset på {} efter prisförändring på 0%?",
+                self.item
+            ),
         }
     }
 

@@ -15,11 +15,11 @@ pub struct ResultSectionProps {
 pub fn result(props: &ResultSectionProps) -> Html {
     let message = if props.passed {
         format!(
-            "Good job, you finished in {:.1} seconds!",
+            "Snyggt jobbat, det tog {:.1} sekunder!",
             props.time_taken.as_secs_f32()
         )
     } else {
-        format!("Failed! Try again.")
+        format!("Fel! Försök igen.")
     };
 
     let on_restart = {
@@ -31,15 +31,15 @@ pub fn result(props: &ResultSectionProps) -> Html {
 
     html! {
         <div class="result-section">
-            <h2 class={if props.passed { "success" } else { "failure" }}>{message}</h2>
+            <h2 class={if props.passed { "Alla rätt" } else { "Fel svar" }}>{message}</h2>
 
             { if !props.passed {
                 if let Some((failed_question, user_answer)) = &props.failed_question_details {
                     html! {
                         <div class="failure-details">
-                            <p><strong>{"Question:"}</strong><br/>{ failed_question.prompt() }</p>
-                            <p><strong>{"Your Answer:"}</strong><br/><span style="color: red;">{ user_answer }</span></p>
-                            <p><strong>{"Correct Answer:"}</strong><br/><span style="color: green;">{ failed_question.answer() }</span></p>
+                            <p><strong>{"Fråga:"}</strong><br/>{ failed_question.prompt() }</p>
+                            <p><strong>{"Ditt svar:"}</strong><br/><span style="color: red;">{ user_answer }</span></p>
+                            <p><strong>{"Rätt svar:"}</strong><br/><span style="color: green;">{ failed_question.answer() }</span></p>
                         </div>
                     }
                 } else {
@@ -51,7 +51,7 @@ pub fn result(props: &ResultSectionProps) -> Html {
             }}
 
             <div class="result-actions">
-                <button onclick={on_restart}>{"Try Again"}</button>
+                <button onclick={on_restart}>{"Försök igen"}</button>
             </div>
         </div>
     }

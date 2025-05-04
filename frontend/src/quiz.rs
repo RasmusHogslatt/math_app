@@ -43,45 +43,23 @@ pub enum Quiz {
 impl Display for Quiz {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Quiz::NoCourse => write!(f, "No Course"),
+            Quiz::NoCourse => write!(f, "Välj en quiz"),
             Quiz::Addition => write!(f, "Addition"),
-            Quiz::Subtraction => write!(f, "Subtraction"),
-            Quiz::Multiplication => write!(f, "Multiplication"),
+            Quiz::Subtraction => write!(f, "Subtraktion"),
+            Quiz::Multiplication => write!(f, "Multiplikation"),
             Quiz::SquareArea => write!(f, "Area"),
             Quiz::SevenFirstOrderEquation => {
-                write!(f, "First Order Equation")
+                write!(f, "Första ordningens ekvation")
             }
             Quiz::FirstDegreeDerivativeQuestion => {
-                write!(f, "First Degree Derivative")
+                write!(f, "Första gradens derivata")
             }
-            Quiz::NumberComparison => write!(f, "Number Comparison"),
-            Quiz::SixRounding => write!(f, "Rounding"),
-            Quiz::SixAverage => write!(f, "Average"),
+            Quiz::NumberComparison => write!(f, "Störst värde"),
+            Quiz::SixRounding => write!(f, "Avrundning"),
+            Quiz::SixAverage => write!(f, "Medelvärde"),
             Quiz::SixMedian => write!(f, "Median"),
-            Quiz::SevenPercentChange => write!(f, "Percent Change"),
-            Quiz::EightExpression => write!(f, "Expression"),
-        }
-    }
-}
-
-impl std::str::FromStr for Quiz {
-    type Err = ();
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "Addition" => Ok(Quiz::Addition),
-            "Subtraction" => Ok(Quiz::Subtraction),
-            "Multiplication" => Ok(Quiz::Multiplication),
-            "Square Area" => Ok(Quiz::SquareArea),
-            "First Order Equation" => Ok(Quiz::SevenFirstOrderEquation),
-            "First Degree Derivative" => Ok(Quiz::FirstDegreeDerivativeQuestion),
-            "Number Comparison" => Ok(Quiz::NumberComparison),
-            "Rounding" => Ok(Quiz::SixRounding),
-            "Average" => Ok(Quiz::SixAverage),
-            "Median" => Ok(Quiz::SixMedian),
-            "Percent Change" => Ok(Quiz::SevenPercentChange),
-            "Expression" => Ok(Quiz::EightExpression),
-            _ => Ok(Quiz::NoCourse),
+            Quiz::SevenPercentChange => write!(f, "Procentuell förändring"),
+            Quiz::EightExpression => write!(f, "Matematiska uttryck"),
         }
     }
 }

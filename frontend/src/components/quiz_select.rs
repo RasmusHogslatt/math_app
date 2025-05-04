@@ -49,7 +49,7 @@ pub fn quiz_select(props: &QuizSelectionProps) -> Html {
 
     html! {
         <div class="quiz-select-container"> // Changed class name for clarity
-            <h3>{"Choose a course:"}</h3>
+            <h3>{"Välj en quiz"}</h3>
             {
                 courses_by_difficulty.iter().map(|(difficulty, courses)| {
                     let difficulty_css_label = match difficulty {
@@ -64,15 +64,15 @@ pub fn quiz_select(props: &QuizSelectionProps) -> Html {
                         Difficulty::YearNine => "YearNine",
                     };
                     let difficulty_name = match difficulty {
-                        Difficulty::YearOne => "Year 1",
-                        Difficulty::YearTwo => "Year 2",
-                        Difficulty::YearThree => "Year 3",
-                        Difficulty::YearFour => "Year 4",
-                        Difficulty::YearFive => "Year 5",
-                        Difficulty::YearSix => "Year 6",
-                        Difficulty::YearSeven => "Year 7",
-                        Difficulty::YearEight => "Year 8",
-                        Difficulty::YearNine => "Year 9",
+                        Difficulty::YearOne => "År 1",
+                        Difficulty::YearTwo => "År 2",
+                        Difficulty::YearThree => "År 3",
+                        Difficulty::YearFour => "År 4",
+                        Difficulty::YearFive => "År 5",
+                        Difficulty::YearSix => "År 6",
+                        Difficulty::YearSeven => "År 7",
+                        Difficulty::YearEight => "År 8",
+                        Difficulty::YearNine => "År 9",
                     };
 
                     let is_expanded = *collapsed_states.get(difficulty).unwrap_or(&false);
@@ -141,15 +141,6 @@ pub fn quiz_select(props: &QuizSelectionProps) -> Html {
                     }
                 }).collect::<Html>()
             }
-            // Keep the current selection display if needed
-            <p class="current-selection-display">
-                {"Current selection: "}
-                { if props.selected != Quiz::NoCourse {
-                    props.selected.to_string()
-                 } else {
-                    "None".to_string()
-                 }}
-            </p>
         </div>
     }
 }

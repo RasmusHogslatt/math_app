@@ -25,7 +25,7 @@ impl SixRoundingQuestion {
 
 impl Question for SixRoundingQuestion {
     fn prompt(&self) -> String {
-        format!("Round to the nearest whole number: {}", self.number)
+        format!("Avrunda till närmaste heltal: {}", self.number)
     }
 
     fn answer(&self) -> &str {

@@ -78,7 +78,7 @@ pub fn quiz_session(props: &QuizSectionProps) -> Html {
                                         ref={input_ref}
                                         value={(*answer).clone()}
                                         oninput={on_input}
-                                        placeholder="Enter your answer"
+                                        placeholder="Ange ditt svar"
                                     />
                                     <button type="submit">{"Submit"}</button>
                                 </form>
