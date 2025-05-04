@@ -40,7 +40,7 @@ jobs:
           ${{ runner.os }}-cargo-
 
     - name: Install Trunk and wasm-bindgen-cli
-      run: cargo install --locked trunk wasm-bindgen-cli
+      run: cargo install --locked --force trunk wasm-bindgen-cli
 
     - name: Build Frontend (Trunk)
       # Ensure assets are referenced correctly relative to the domain root
