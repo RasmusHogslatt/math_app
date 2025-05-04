@@ -1,5 +1,4 @@
 use crate::{quiz::Question, util::format_to_one_decimal};
-use gloo::console::log;
 use rand::Rng;
 
 static ITEMS: [&str; 6] = [

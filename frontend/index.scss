@@ -227,15 +227,43 @@ textarea {
 
     // Add specific border color based on difficulty class
     &.difficulty-YearOne {
-        border-left: 4px solid $success-color;
+        border-left: 4px solid #8bc34a;
+        /* Light green - easiest */
     }
 
     &.difficulty-YearTwo {
-        border-left: 4px solid $warning-color;
+        border-left: 4px solid #4caf50;
+        /* Medium green */
     }
 
     &.difficulty-YearThree {
-        border-left: 4px solid $failure-color;
+        border-left: 4px solid #03a9f4;
+        /* Light blue */
+    }
+
+    &.difficulty-YearFour {
+        border-left: 4px solid #2196f3;
+        /* Medium blue */
+    }
+
+    &.difficulty-YearFive {
+        border-left: 4px solid #ff9800;
+        /* Orange */
+    }
+
+    &.difficulty-YearSix {
+        border-left: 4px solid #ff5722;
+        /* Deep orange */
+    }
+
+    &.difficulty-YearSeven {
+        border-left: 4px solid #f44336;
+        /* Red */
+    }
+
+    &.difficulty-YearEight {
+        border-left: 4px solid #9c27b0;
+        /* Purple - most advanced */
     }
 }
 
