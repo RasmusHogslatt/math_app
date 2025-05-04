@@ -56,7 +56,7 @@ fn app() -> Html {
     let failed_question_details = use_state(|| None::<(QuestionBox, String)>);
 
     // Total number of questions
-    let total_questions = 3;
+    let total_questions = 10;
 
     // Course selection handler
     let on_course_change = {
