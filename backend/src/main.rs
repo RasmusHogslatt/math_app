@@ -327,7 +327,8 @@ async fn main() -> std::io::Result<()> {
                     .route("/submit", web::post().to(submit_score)),
             )
     })
-    .bind("127.0.0.1:8080")?
+    .bind("0.0.0.0:8080")?
+    // 127.0.0.1:8080
     .run()
     .await
 }
