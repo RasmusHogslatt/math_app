@@ -32,19 +32,19 @@ impl MathQuestion {
 
         match operation {
             Quiz::Addition => {
-                let a = rng.random_range(1..3);
-                let b = rng.random_range(1..3);
+                let a = rng.random_range(1..75);
+                let b = rng.random_range(1..75);
                 Self::new(a, b, operation)
             }
             Quiz::Subtraction => {
                 // Ensure positive result for subtraction
-                let b = rng.random_range(1..3);
-                let a = rng.random_range(b..3);
+                let b = rng.random_range(1..75);
+                let a = rng.random_range(b..75);
                 Self::new(a, b, operation)
             }
             Quiz::Multiplication => {
-                let a = rng.random_range(1..2);
-                let b = rng.random_range(1..2);
+                let a = rng.random_range(1..10);
+                let b = rng.random_range(1..10);
                 Self::new(a, b, operation)
             }
             _ => Self::new(0, 0, operation),
