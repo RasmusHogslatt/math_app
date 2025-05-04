@@ -5,7 +5,6 @@ mod quizzes;
 mod util;
 
 use common::User;
-use components::_QuizSelectionProps::selected;
 use components::Leaderboard;
 use components::QuizSelect;
 use components::QuizSession;
