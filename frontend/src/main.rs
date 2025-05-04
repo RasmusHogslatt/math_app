@@ -53,6 +53,7 @@ fn app() -> Html {
     let start_time = use_state(|| Instant::now());
     let elapsed_time = use_state(|| Duration::from_secs(0));
     let interval_ref = use_mut_ref(|| None::<Interval>);
+    let failed_question_details = use_state(|| None::<(QuestionBox, String)>);
 
     // Total number of questions
     let total_questions = 3;
@@ -129,26 +130,50 @@ fn app() -> Html {
         let app_state = app_state.clone();
         let elapsed_time = elapsed_time.clone();
         let interval_ref = interval_ref.clone();
+        // --- Add failed_question_details state ---
+        let failed_question_details = failed_question_details.clone();
+        // ------------------------------------------
 
         Callback::from(move |answer: String| {
             let current_q = *current_question;
-            let q = &(*questions)[current_q];
-
-            // Use the Question trait check_answer method
-            if q.check_answer(&answer) {
-                if current_q + 1 >= total_questions {
+            // Ensure we don't panic if questions isn't populated somehow
+            if let Some(q) = (*questions).get(current_q) {
+                // Use the Question trait check_answer method
+                if q.check_answer(&answer) {
+                    // Correct Answer Logic (no change)
+                    if current_q + 1 >= total_questions {
+                        if let Some(handle) = interval_ref.borrow_mut().take() {
+                            handle.cancel();
+                        }
+                        failed_question_details.set(None); // Clear any previous failure details
+                        app_state.set(AppState::Result(true, *elapsed_time));
+                    } else {
+                        current_question.set(current_q + 1);
+                    }
+                } else {
+                    // --- Incorrect Answer Logic ---
                     if let Some(handle) = interval_ref.borrow_mut().take() {
                         handle.cancel();
                     }
-                    app_state.set(AppState::Result(true, *elapsed_time));
-                } else {
-                    current_question.set(current_q + 1);
+                    // Store the failed question and the user's incorrect answer
+                    failed_question_details.set(Some((q.clone(), answer)));
+                    app_state.set(AppState::Result(false, *elapsed_time));
+                    // -----------------------------
                 }
             } else {
+                // Handle case where question index is out of bounds (optional, good practice)
+                /*  console::error!("Error: Tried to access question index out of bounds."); */
+                // Optionally reset state or show an error message
+                // For now, just go back to selection? Or handle appropriately.
+                // Let's reset for safety, similar to restart
                 if let Some(handle) = interval_ref.borrow_mut().take() {
                     handle.cancel();
                 }
-                app_state.set(AppState::Result(false, *elapsed_time));
+                failed_question_details.set(None);
+                questions.set(Vec::new());
+                current_question.set(0);
+                elapsed_time.set(Duration::from_secs(0));
+                app_state.set(AppState::Selection);
             }
         })
     };
@@ -159,6 +184,7 @@ fn app() -> Html {
         let questions = questions.clone();
         let current_question = current_question.clone();
         let elapsed_time = elapsed_time.clone();
+        let failed_question_details = failed_question_details.clone();
 
         Callback::from(move |_| {
             // Cancel any ongoing interval
@@ -169,18 +195,12 @@ fn app() -> Html {
             questions.set(Vec::new());
             current_question.set(0);
             elapsed_time.set(Duration::from_secs(0));
-            web_sys::console::log_1(
-                &format!(
-                    "on_restart END: elapsed_time reset. Value is now: {:?}",
-                    *elapsed_time
-                )
-                .into(),
-            );
+            failed_question_details.set(None);
             app_state.set(AppState::Selection);
         })
     };
 
-    // Effect to reset state and STOP TIMER if course changes during quiz/result
+    // Reset timer and states
     {
         let course = course.clone();
         let app_state = app_state.clone();
@@ -188,28 +208,23 @@ fn app() -> Html {
         let questions = questions.clone();
         let current_question = current_question.clone();
         let elapsed_time = elapsed_time.clone();
+        let failed_question_details = failed_question_details.clone();
 
         use_effect_with((*course).clone(), move |_current_course| {
-            // Check if the app state is not Selection AND the selected course is not NoCourse
-            if *app_state != AppState::Selection
-            /* && *current_course != Quiz::NoCourse */
-            {
+            if *app_state != AppState::Selection {
                 web_sys::console::log_1(
                     &"Course changed, resetting state and stopping timer.".into(),
                 );
 
-                // Stop the timer if it's running
                 if let Some(handle) = interval_ref.borrow_mut().take() {
                     handle.cancel();
                     web_sys::console::log_1(&"Timer stopped due to course change.".into());
                 }
 
-                // Reset other relevant states
                 questions.set(Vec::new());
                 current_question.set(0);
                 elapsed_time.set(Duration::from_secs(0));
-
-                // Reset to selection state
+                failed_question_details.set(None);
                 app_state.set(AppState::Selection);
             }
             || ()
@@ -264,13 +279,21 @@ fn app() -> Html {
                                 html! { <p>{"Loading questions..."}</p> }
                             }
                         },
-                        AppState::Result(passed, time_taken) => html! {
-                            <ResultSection
+                        AppState::Result(passed, time_taken) => {
+                            let failure_data = if !passed {
+                                (*failed_question_details).clone()
+                            } else {
+                                None
+                            };
+                            html! {
+                                <ResultSection
                                 passed={passed}
                                 time_taken={time_taken}
                                 course={(*course).clone()}
                                 on_restart={on_restart.clone()}
+                                failed_question_details={failure_data}
                             />
+                        }
                         }
                     }
                 }

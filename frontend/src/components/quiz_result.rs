@@ -1,4 +1,4 @@
-use crate::quiz::Quiz;
+use crate::quiz::{Question, QuestionBox, Quiz};
 use web_time::Duration;
 use yew::prelude::*;
 
@@ -8,6 +8,7 @@ pub struct ResultSectionProps {
     pub time_taken: Duration,
     pub course: Quiz,
     pub on_restart: Callback<()>,
+    pub failed_question_details: Option<(QuestionBox, String)>,
 }
 
 #[function_component(ResultSection)]
@@ -31,6 +32,23 @@ pub fn result(props: &ResultSectionProps) -> Html {
     html! {
         <div class="result-section">
             <h2 class={if props.passed { "success" } else { "failure" }}>{message}</h2>
+
+            { if !props.passed {
+                if let Some((failed_question, user_answer)) = &props.failed_question_details {
+                    html! {
+                        <div class="failure-details">
+                            <p><strong>{"Question:"}</strong><br/>{ failed_question.prompt() }</p>
+                            <p><strong>{"Your Answer:"}</strong><br/><span style="color: red;">{ user_answer }</span></p>
+                            <p><strong>{"Correct Answer:"}</strong><br/><span style="color: green;">{ failed_question.answer() }</span></p>
+                        </div>
+                    }
+                } else {
+                    // Optional: Message if details are missing for some reason
+                    html! { <p>{"Could not load failure details."}</p>}
+                }
+            } else {
+                html! {} // Render nothing if passed
+            }}
 
             <div class="result-actions">
                 <button onclick={on_restart}>{"Try Again"}</button>
