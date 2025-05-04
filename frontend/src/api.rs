@@ -78,10 +78,19 @@ pub async fn fetch_leaderboard(
     let school_id_str = school_id.to_string(); // Convert Uuid to string
 
     // *** THIS is the critical line ***
-    let url = format!(
-        "{}/api/leaderboard?course={}&school={}&school_id={}", // Must include all 3
-        API_BASE_URL, encoded_course, encoded_school, school_id_str
-    );
+    let url = if API_BASE_URL.is_empty() {
+        // In production, use relative URLs that work regardless of domain
+        format!(
+            "/api/leaderboard?course={}&school={}&school_id={}",
+            encoded_course, encoded_school, school_id_str
+        )
+    } else {
+        // In development, use the full URL with localhost
+        format!(
+            "{}/api/leaderboard?course={}&school={}&school_id={}",
+            API_BASE_URL, encoded_course, encoded_school, school_id_str
+        )
+    };
     // Optional: Keep this log for debugging
     web_sys::console::log_1(&format!("Fetching leaderboard from URL: {}", url).into());
 
@@ -91,7 +100,11 @@ pub async fn fetch_leaderboard(
 }
 
 pub async fn submit_score(req: &SubmitScoreRequest) -> Result<(), ApiError> {
-    let url = format!("{}/api/submit", API_BASE_URL);
+    let url = if API_BASE_URL.is_empty() {
+        "/api/submit".to_string()
+    } else {
+        format!("{}/api/submit", API_BASE_URL)
+    };
     web_sys::console::log_1(&format!("Submitting score to URL: {}", url).into()); // Debug log
     web_sys::console::log_1(&format!("Submit request payload: {:?}", req).into()); // Debug log
 
