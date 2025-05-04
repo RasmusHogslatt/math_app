@@ -15,11 +15,12 @@ env:
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest # Use an Ubuntu runner in GitHub Actions
-
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    - name: Check Runner Architecture
+      run: uname -m
     - name: Setup Rust toolchain
       uses: dtolnay/rust-toolchain@stable
       with:
