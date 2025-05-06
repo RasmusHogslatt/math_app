@@ -18,3 +18,5 @@ pub mod seven_percent_change;
 pub use seven_percent_change::*;
 pub mod eight_expressions;
 pub use eight_expressions::*;
+pub mod six_fraction_to_degree;
+pub use six_fraction_to_degree::*;

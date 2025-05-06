@@ -9,3 +9,5 @@ ssh root@159.223.1.36
 run "cargo sqlx prepare --workspace -- --bin backend"
 to generate metadata for offline compilation during github actions workflow.
 redeploy
+
+1/4 varv = 90 grader

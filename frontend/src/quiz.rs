@@ -36,6 +36,7 @@ pub enum Quiz {
     SixRounding,
     SixAverage,
     SixMedian,
+    SixFractionToDegree,
     SevenPercentChange,
     EightExpression,
 }
@@ -58,6 +59,7 @@ impl Display for Quiz {
             Quiz::SixRounding => write!(f, "Avrundning"),
             Quiz::SixAverage => write!(f, "Medelvärde"),
             Quiz::SixMedian => write!(f, "Median"),
+            Quiz::SixFractionToDegree => write!(f, "Bråk till grader"),
             Quiz::SevenPercentChange => write!(f, "Procentuell förändring"),
             Quiz::EightExpression => write!(f, "Matematiska uttryck"),
         }
@@ -78,6 +80,7 @@ impl Quiz {
             Quiz::SixRounding => Difficulty::YearSix,
             Quiz::SixAverage => Difficulty::YearSix,
             Quiz::SixMedian => Difficulty::YearSix,
+            Quiz::SixFractionToDegree => Difficulty::YearSix,
             Quiz::SevenPercentChange => Difficulty::YearSeven,
             Quiz::EightExpression => Difficulty::YearEight,
         }
@@ -107,6 +110,7 @@ pub enum QuestionBox {
     SixRounding(SixRoundingQuestion),
     SixAverage(SixAverageQuestion),
     SixMedian(SixMedianQuestion),
+    SixFractionToDegree(SixFractionToDegree),
     SevenPercentChange(SevenPercentChangeQuestion),
     EightExpression(EightExpressionQuestion),
 }
@@ -122,6 +126,7 @@ impl Question for QuestionBox {
             QuestionBox::SixRounding(q) => q.prompt(),
             QuestionBox::SixAverage(q) => q.prompt(),
             QuestionBox::SixMedian(q) => q.prompt(),
+            QuestionBox::SixFractionToDegree(q) => q.prompt(),
             QuestionBox::SevenPercentChange(q) => q.prompt(),
             QuestionBox::EightExpression(q) => q.prompt(),
         }
@@ -137,6 +142,7 @@ impl Question for QuestionBox {
             QuestionBox::SixRounding(q) => q.answer(),
             QuestionBox::SixAverage(q) => q.answer(),
             QuestionBox::SixMedian(q) => q.answer(),
+            QuestionBox::SixFractionToDegree(q) => q.answer(),
             QuestionBox::SevenPercentChange(q) => q.answer(),
             QuestionBox::EightExpression(q) => q.answer(),
         }
@@ -152,6 +158,7 @@ impl Question for QuestionBox {
             QuestionBox::SixRounding(q) => q.check_answer(answer),
             QuestionBox::SixAverage(q) => q.check_answer(answer),
             QuestionBox::SixMedian(q) => q.check_answer(answer),
+            QuestionBox::SixFractionToDegree(q) => q.check_answer(answer),
             QuestionBox::SevenPercentChange(q) => q.check_answer(answer),
             QuestionBox::EightExpression(q) => q.check_answer(answer),
         }
@@ -181,6 +188,9 @@ pub fn generate_questions(quiz_type: Quiz, count: usize) -> Vec<QuestionBox> {
             Quiz::SixRounding => QuestionBox::SixRounding(SixRoundingQuestion::random()),
             Quiz::SixAverage => QuestionBox::SixAverage(SixAverageQuestion::random()),
             Quiz::SixMedian => QuestionBox::SixMedian(SixMedianQuestion::random()),
+            Quiz::SixFractionToDegree => {
+                QuestionBox::SixFractionToDegree(SixFractionToDegree::random())
+            }
             Quiz::SevenPercentChange => {
                 QuestionBox::SevenPercentChange(SevenPercentChangeQuestion::random())
             }

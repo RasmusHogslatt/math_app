@@ -42,6 +42,7 @@ fn app() -> Html {
         Quiz::SixRounding,
         Quiz::SixAverage,
         Quiz::SixMedian,
+        Quiz::SixFractionToDegree,
         Quiz::SevenPercentChange,
         Quiz::EightExpression,
     ]);
