@@ -23,8 +23,8 @@ impl SixFractionToDegree {
 
     pub fn random() -> Self {
         let mut rng = rand::rng();
-        let denominator: i32 = rng.random_range(DENOMINATOR_RANGE.0..DENOMINATOR_RANGE.1);
-        let nominator: i32 = rng.random_range(1..denominator);
+        let denominator: i32 = rng.random_range(DENOMINATOR_RANGE.0..=DENOMINATOR_RANGE.1);
+        let nominator: i32 = rng.random_range(1..=denominator);
         Self::new(nominator, denominator)
     }
 }
