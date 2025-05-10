@@ -1,5 +1,4 @@
 // --- Variables ---
-// Using HSL colors for easier modification of saturation/lightness
 $primary-hue: 210; // Blue
 $secondary-hue: 145; // Green
 $accent-hue: 45; // Yellow/Orange
@@ -18,12 +17,12 @@ $accent-color-dark: hsl($accent-hue, 80%, 50%);
 
 $success-color: hsl($secondary-hue, 65%, 45%);
 $failure-color: hsl($danger-hue, 70%, 55%);
-$warning-color: hsl($accent-hue, 85%, 58%); // For medium difficulty
+$warning-color: hsl($accent-hue, 85%, 58%);
 
 $text-color: hsl($neutral-hue, 15%, 25%);
 $text-color-light: hsl($neutral-hue, 15%, 55%);
 $background-color: hsl($neutral-hue, 30%, 98%);
-$panel-background: hsl(0, 0%, 100%); // White panels
+$panel-background: hsl(0, 0%, 100%);
 $border-color: hsl($neutral-hue, 25%, 88%);
 $border-color-light: hsl($neutral-hue, 25%, 94%);
 
@@ -40,7 +39,6 @@ $sidebar-width: 280px;
 $leaderboard-width: 320px;
 $transition-speed: 0.25s;
 
-// --- Mixins ---
 @mixin button-style($bg-color: $primary-color, $text-color: white) {
     display: inline-block;
     padding: 10px 20px;
@@ -83,7 +81,6 @@ $transition-speed: 0.25s;
     padding: 20px;
 }
 
-// --- Base Styles ---
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700&family=Noto+Sans+Math&display=swap');
 
 *,
@@ -93,7 +90,7 @@ $transition-speed: 0.25s;
 }
 
 html {
-    font-size: $font-size-base; // Base for rem units
+    font-size: $font-size-base;
 }
 
 body {
@@ -149,7 +146,6 @@ a {
 
 input[type="text"],
 input[type="number"],
-// If you add number inputs
 textarea {
     padding: 10px 12px;
     border: 1px solid $border-color;
@@ -165,7 +161,6 @@ textarea {
     }
 }
 
-// --- Layout ---
 .app-container {
     display: flex;
     height: 100vh;
@@ -182,15 +177,43 @@ textarea {
     flex-shrink: 0;
 }
 
+.title-section {
+    text-align: center;
+    width: 100%;
+    padding-bottom: 30px;
+
+    h1 {
+        font-size: 2.5rem;
+        color: $primary-color-dark;
+        margin-top: 0;
+        margin-bottom: 0;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+        color: $text-color-light;
+        font-weight: 400;
+        margin-top: 0.5em;
+        margin-bottom: 0;
+    }
+}
+
 .main-content {
     flex: 1;
     padding: 30px 40px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
     min-width: 0;
     overflow-y: auto;
+}
+
+.dynamic-content-wrapper {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
 }
 
 .leaderboard-panel {
@@ -202,7 +225,6 @@ textarea {
     flex-shrink: 0;
 }
 
-// --- Component: QuizSelect (.sidebar) ---
 .quiz-select-container {
     h3 {
         margin-bottom: 1.2em;
@@ -218,52 +240,46 @@ textarea {
     border-radius: $border-radius;
     background-color: $panel-background;
     box-shadow: 0 1px 3px hsla($neutral-hue, 15%, 50%, 0.05);
-    overflow: hidden; // Keep radius effective and hide overflowing content
+    overflow: hidden;
     transition: box-shadow $transition-speed ease;
 
     &:hover {
         box-shadow: 0 3px 8px hsla($neutral-hue, 15%, 50%, 0.08);
     }
 
-    // Add specific border color based on difficulty class
     &.difficulty-YearOne {
         border-left: 4px solid #8bc34a;
-        /* Light green - easiest */
     }
 
     &.difficulty-YearTwo {
         border-left: 4px solid #4caf50;
-        /* Medium green */
     }
 
     &.difficulty-YearThree {
         border-left: 4px solid #03a9f4;
-        /* Light blue */
     }
 
     &.difficulty-YearFour {
         border-left: 4px solid #2196f3;
-        /* Medium blue */
     }
 
     &.difficulty-YearFive {
         border-left: 4px solid #ff9800;
-        /* Orange */
+
     }
 
     &.difficulty-YearSix {
         border-left: 4px solid #ff5722;
-        /* Deep orange */
+
     }
 
     &.difficulty-YearSeven {
         border-left: 4px solid #f44336;
-        /* Red */
     }
 
     &.difficulty-YearEight {
         border-left: 4px solid #9c27b0;
-        /* Purple - most advanced */
+
     }
 }
 
@@ -275,8 +291,6 @@ textarea {
     user-select: none;
     font-size: 1.1rem;
     font-weight: 600;
-    // Remove border-bottom here, let the section border handle separation
-    // border-bottom: 1px solid $border-color-light;
     transition: background-color $transition-speed ease;
     display: flex;
     align-items: center;
@@ -289,22 +303,18 @@ textarea {
 
 .course-list {
     list-style: none;
-    padding: 0; // Padding is 0 when collapsed
+    padding: 0;
     margin: 0;
-    max-height: 0; // Start collapsed (height 0)
-    overflow: hidden; // IMPORTANT: Hide content when collapsed
+    max-height: 0;
+    overflow: hidden;
     transition: max-height 0.4s cubic-bezier(0.25, 0.1, 0.25, 1),
-        padding 0.4s ease; // Transition height and padding
+        padding 0.4s ease;
 
-    // --- *** CHANGE IS HERE *** ---
-    // Target .course-list when the parent .difficulty-section has .expanded
     .difficulty-section.expanded & {
-        max-height: 400px; // Set a sufficient max height for the content
-        padding: 10px 0; // Add vertical padding when expanded
-        border-top: 1px solid $border-color-light; // Add separator line above list
+        max-height: 400px;
+        padding: 10px 0;
+        border-top: 1px solid $border-color-light;
     }
-
-    // --- *** END OF CHANGE *** ---
 
     li {
         padding: 10px 20px 10px 30px; // Indent items

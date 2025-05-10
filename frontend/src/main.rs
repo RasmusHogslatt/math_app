@@ -236,55 +236,60 @@ fn app() -> Html {
                 />
             </div>
             <div class="main-content">
-                {
-                    match (*app_state).clone() {
-                        AppState::Selection => html! {
-                            <div class="start-section">
-                                <h2>{format!("{}", course.to_string())}</h2>
-                                <p>{"Välj en quiz i listan och klicka på Starta quiz när du är redo."}</p>
-                                <button
-                                    onclick={on_start_quiz}
-                                    disabled={*course == Quiz::NoCourse}
-                                >
-                                    {"Starta quiz"}
-                                </button>
-                            </div>
-                        },
-                        AppState::Quiz => {
-                            let current_q = *current_question;
-                            if current_q < (*questions).len() {
-                                let question = (*questions)[current_q].clone();
-                                html! {
-                                    <QuizSession
-                                        question={question}
-                                        elapsed_time={*elapsed_time}
-                                        current_question={current_q}
-                                        total_questions={total_questions}
-                                        on_answer={on_answer.clone()}
-                                    />
+                <div class="title-section">
+                    <h1>{"Mer Matte"}</h1>
+                </div>
+                <div class="dynamic-content-wrapper">
+                    {
+                        match (*app_state).clone() {
+                            AppState::Selection => html! {
+                                <div class="start-section">
+                                    <h2>{format!("{}", course.to_string())}</h2>
+                                    <p>{"Välj en quiz i listan och klicka på Starta quiz när du är redo."}</p>
+                                    <button
+                                        onclick={on_start_quiz}
+                                        disabled={*course == Quiz::NoCourse}
+                                    >
+                                        {"Starta quiz"}
+                                    </button>
+                                </div>
+                            },
+                            AppState::Quiz => {
+                                let current_q = *current_question;
+                                if current_q < (*questions).len() {
+                                    let question = (*questions)[current_q].clone();
+                                    html! {
+                                        <QuizSession
+                                            question={question}
+                                            elapsed_time={*elapsed_time}
+                                            current_question={current_q}
+                                            total_questions={total_questions}
+                                            on_answer={on_answer.clone()}
+                                        />
+                                    }
+                                } else {
+                                    html! { <p>{"Laddar frågor..."}</p> }
                                 }
-                            } else {
-                                html! { <p>{"Laddar frågor..."}</p> }
+                            },
+                            AppState::Result(passed, time_taken) => {
+                                let failure_data = if !passed {
+                                    (*failed_question_details).clone()
+                                } else {
+                                    None
+                                };
+                                html! {
+                                    <ResultSection
+                                    passed={passed}
+                                    time_taken={time_taken}
+                                    course={(*course).clone()}
+                                    on_restart={on_restart.clone()}
+                                    failed_question_details={failure_data}
+                                />
                             }
-                        },
-                        AppState::Result(passed, time_taken) => {
-                            let failure_data = if !passed {
-                                (*failed_question_details).clone()
-                            } else {
-                                None
-                            };
-                            html! {
-                                <ResultSection
-                                passed={passed}
-                                time_taken={time_taken}
-                                course={(*course).clone()}
-                                on_restart={on_restart.clone()}
-                                failed_question_details={failure_data}
-                            />
-                        }
+                            }
                         }
                     }
-                }
+                </div>
             </div>
             <div class="leaderboard-panel">
             <Leaderboard
