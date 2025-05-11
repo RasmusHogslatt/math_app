@@ -3,12 +3,12 @@ use rand::Rng;
 use crate::quiz::Question;
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct SixRoundingQuestion {
+pub struct RoundingQuestion {
     number: f32,
     answer: String,
 }
 
-impl SixRoundingQuestion {
+impl RoundingQuestion {
     pub fn new(number: f32) -> Self {
         Self {
             number: number,
@@ -23,7 +23,7 @@ impl SixRoundingQuestion {
     }
 }
 
-impl Question for SixRoundingQuestion {
+impl Question for RoundingQuestion {
     fn prompt(&self) -> String {
         format!("Avrunda till närmaste heltal: {}", self.number)
     }

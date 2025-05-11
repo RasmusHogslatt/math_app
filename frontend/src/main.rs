@@ -36,16 +36,16 @@ fn app() -> Html {
         Quiz::Subtraction,
         Quiz::Multiplication,
         Quiz::SquareArea,
-        Quiz::SevenFirstOrderEquation,
+        Quiz::FirstOrderEquation,
         Quiz::FirstDegreeDerivativeQuestion,
         Quiz::NumberComparison,
         Quiz::FractionComparison,
-        Quiz::SixRounding,
-        Quiz::SixAverage,
-        Quiz::SixMedian,
-        Quiz::SixFractionToDegree,
-        Quiz::SevenPercentChange,
-        Quiz::EightExpression,
+        Quiz::Rounding,
+        Quiz::Average,
+        Quiz::Median,
+        Quiz::FractionToDegree,
+        Quiz::PercentChange,
+        Quiz::Expression,
     ]);
 
     let course = use_state(|| Quiz::NoCourse);

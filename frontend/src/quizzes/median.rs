@@ -5,12 +5,12 @@ use crate::{quiz::Question, util::format_to_one_decimal};
 const MEDIAN_NUMBERS_COUNT_RANGE: (u32, u32) = (4, 6);
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct SixMedianQuestion {
+pub struct MedianQuestion {
     numbers: Vec<i32>,
     answer: String,
 }
 
-impl SixMedianQuestion {
+impl MedianQuestion {
     pub fn new(numbers: Vec<i32>) -> Self {
         let median: f32 = {
             let mut sorted_numbers = numbers.clone();
@@ -37,7 +37,7 @@ impl SixMedianQuestion {
     }
 }
 
-impl Question for SixMedianQuestion {
+impl Question for MedianQuestion {
     fn prompt(&self) -> String {
         format!("Beräkna medianen: {:?}", self.numbers)
     }

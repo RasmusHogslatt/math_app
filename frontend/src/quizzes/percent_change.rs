@@ -11,14 +11,14 @@ static ITEMS: [&str; 6] = [
 ];
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct SevenPercentChangeQuestion {
+pub struct PercentChangeQuestion {
     current_price: i32,
     percentage_change: i32,
     item: String,
     answer: String,
 }
 
-impl SevenPercentChangeQuestion {
+impl PercentChangeQuestion {
     pub fn new(current_price: i32, percent_change: i32) -> Self {
         let change: f32 = current_price as f32 * percent_change as f32 / 100.0;
         let new_price: f32 = current_price as f32 + change;
@@ -40,7 +40,7 @@ impl SevenPercentChangeQuestion {
     }
 }
 
-impl Question for SevenPercentChangeQuestion {
+impl Question for PercentChangeQuestion {
     fn prompt(&self) -> String {
         match self.percentage_change {
             change if change > 0 => format!(

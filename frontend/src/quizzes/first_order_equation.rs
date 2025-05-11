@@ -3,7 +3,7 @@ use rand::Rng;
 use crate::quiz::Question;
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct SevenFirstOrderEquationQuestion {
+pub struct FirstOrderEquationQuestion {
     coefficient: i32,
     constant_left: i32,
     constant_right: i32,
@@ -11,7 +11,7 @@ pub struct SevenFirstOrderEquationQuestion {
     answer_text: String,
 }
 
-impl SevenFirstOrderEquationQuestion {
+impl FirstOrderEquationQuestion {
     pub fn new(coefficient: i32, constant_left: i32, constant_right: i32, operation: char) -> Self {
         // Calculate the answer (x value)
         let x = match operation {
@@ -59,7 +59,7 @@ impl SevenFirstOrderEquationQuestion {
     }
 }
 
-impl Question for SevenFirstOrderEquationQuestion {
+impl Question for FirstOrderEquationQuestion {
     fn prompt(&self) -> String {
         // Format the equation nicely
         format!(

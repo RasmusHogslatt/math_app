@@ -6,7 +6,7 @@ const X_RANGE: (i32, i32) = (4, 6);
 const Y_RANGE: (i32, i32) = (4, 6);
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct EightExpressionQuestion {
+pub struct ExpressionQuestion {
     x_factor: i32,
     y_factor: i32,
     x_value: i32,
@@ -15,7 +15,7 @@ pub struct EightExpressionQuestion {
     answer: String,
 }
 
-impl EightExpressionQuestion {
+impl ExpressionQuestion {
     pub fn new(x_factor: i32, y_factor: i32, x_value: i32, y_value: i32, sign: bool) -> Self {
         let answer: i32 = match sign {
             true => x_value * x_factor + y_value * y_factor,
@@ -43,7 +43,7 @@ impl EightExpressionQuestion {
     }
 }
 
-impl Question for EightExpressionQuestion {
+impl Question for ExpressionQuestion {
     fn prompt(&self) -> String {
         let sign = if self.sign { "+" } else { "-" };
         format!(

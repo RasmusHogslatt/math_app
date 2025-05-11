@@ -1,6 +1,6 @@
 New table with users
 
-change difficulty to year levels
+change subject to year levels
 
 more courses per year levels
 

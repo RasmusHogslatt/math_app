@@ -11,16 +11,16 @@ use std::fmt::{self, Display};
 // ------------------------------------
 
 #[derive(Clone, PartialEq, Debug, Copy, Eq, Hash, Ord, PartialOrd)]
-pub enum Difficulty {
-    YearOne,
-    YearTwo,
-    YearThree,
-    YearFour,
-    YearFive,
-    YearSix,
-    YearSeven,
-    YearEight,
-    YearNine,
+pub enum Subject {
+    Addition,
+    Subtraction,
+    Multiplication,
+    Division,
+    Number,
+    Geometry,
+    Statisitics,
+    Algebra,
+    Random,
 }
 
 #[derive(Clone, PartialEq, Debug, Copy, Eq, Hash)]
@@ -30,16 +30,16 @@ pub enum Quiz {
     Subtraction,
     Multiplication,
     SquareArea,
-    SevenFirstOrderEquation,
+    FirstOrderEquation,
     FirstDegreeDerivativeQuestion,
     NumberComparison,
     FractionComparison,
-    SixRounding,
-    SixAverage,
-    SixMedian,
-    SixFractionToDegree,
-    SevenPercentChange,
-    EightExpression,
+    Rounding,
+    Average,
+    Median,
+    FractionToDegree,
+    PercentChange,
+    Expression,
 }
 
 impl Display for Quiz {
@@ -50,7 +50,7 @@ impl Display for Quiz {
             Quiz::Subtraction => write!(f, "Subtraktion"),
             Quiz::Multiplication => write!(f, "Multiplikation"),
             Quiz::SquareArea => write!(f, "Area"),
-            Quiz::SevenFirstOrderEquation => {
+            Quiz::FirstOrderEquation => {
                 write!(f, "Första ordningens ekvation")
             }
             Quiz::FirstDegreeDerivativeQuestion => {
@@ -58,34 +58,34 @@ impl Display for Quiz {
             }
             Quiz::NumberComparison => write!(f, "Störst värde"),
             Quiz::FractionComparison => write!(f, "Störst bråk"),
-            Quiz::SixRounding => write!(f, "Avrundning"),
-            Quiz::SixAverage => write!(f, "Medelvärde"),
-            Quiz::SixMedian => write!(f, "Median"),
-            Quiz::SixFractionToDegree => write!(f, "Bråk till grader"),
-            Quiz::SevenPercentChange => write!(f, "Procentuell förändring"),
-            Quiz::EightExpression => write!(f, "Matematiska uttryck"),
+            Quiz::Rounding => write!(f, "Avrundning"),
+            Quiz::Average => write!(f, "Medelvärde"),
+            Quiz::Median => write!(f, "Median"),
+            Quiz::FractionToDegree => write!(f, "Bråk till grader"),
+            Quiz::PercentChange => write!(f, "Procentuell förändring"),
+            Quiz::Expression => write!(f, "Matematiska uttryck"),
         }
     }
 }
 
 impl Quiz {
-    pub fn difficulty(&self) -> Difficulty {
+    pub fn subject(&self) -> Subject {
         match self {
-            Quiz::NoCourse => Difficulty::YearOne,
-            Quiz::Addition => Difficulty::YearOne,
-            Quiz::Subtraction => Difficulty::YearTwo,
-            Quiz::Multiplication => Difficulty::YearThree,
-            Quiz::SquareArea => Difficulty::YearFour,
-            Quiz::SevenFirstOrderEquation => Difficulty::YearSeven,
-            Quiz::FirstDegreeDerivativeQuestion => Difficulty::YearEight,
-            Quiz::NumberComparison => Difficulty::YearFive,
-            Quiz::FractionComparison => Difficulty::YearFive,
-            Quiz::SixRounding => Difficulty::YearSix,
-            Quiz::SixAverage => Difficulty::YearSix,
-            Quiz::SixMedian => Difficulty::YearSix,
-            Quiz::SixFractionToDegree => Difficulty::YearSix,
-            Quiz::SevenPercentChange => Difficulty::YearSeven,
-            Quiz::EightExpression => Difficulty::YearEight,
+            Quiz::NoCourse => Subject::Addition,
+            Quiz::Addition => Subject::Addition,
+            Quiz::Subtraction => Subject::Subtraction,
+            Quiz::Multiplication => Subject::Multiplication,
+            Quiz::SquareArea => Subject::Geometry,
+            Quiz::FirstOrderEquation => Subject::Algebra,
+            Quiz::FirstDegreeDerivativeQuestion => Subject::Algebra,
+            Quiz::NumberComparison => Subject::Number,
+            Quiz::FractionComparison => Subject::Number,
+            Quiz::Rounding => Subject::Number,
+            Quiz::Average => Subject::Statisitics,
+            Quiz::Median => Subject::Statisitics,
+            Quiz::FractionToDegree => Subject::Geometry,
+            Quiz::PercentChange => Subject::Statisitics,
+            Quiz::Expression => Subject::Algebra,
         }
     }
 }
@@ -107,16 +107,16 @@ pub trait Question {
 pub enum QuestionBox {
     Math(MathQuestion),
     Area(AreaQuestion),
-    FirstOrderEquationQuestion(SevenFirstOrderEquationQuestion),
+    FirstOrderEquationQuestion(FirstOrderEquationQuestion),
     FirstDegreeDerivativeQuestion(FirstDegreeDerivativeQuestion),
     NumberComparison(NumberComparisonQuestion),
     FractionComparison(FractionComparisonQuestion),
-    SixRounding(SixRoundingQuestion),
-    SixAverage(SixAverageQuestion),
-    SixMedian(SixMedianQuestion),
-    SixFractionToDegree(SixFractionToDegree),
-    SevenPercentChange(SevenPercentChangeQuestion),
-    EightExpression(EightExpressionQuestion),
+    SixRounding(RoundingQuestion),
+    SixAverage(AverageQuestion),
+    SixMedian(MedianQuestion),
+    SixFractionToDegree(FractionToDegree),
+    SevenPercentChange(PercentChangeQuestion),
+    EightExpression(ExpressionQuestion),
 }
 
 impl Question for QuestionBox {
@@ -183,8 +183,8 @@ pub fn generate_questions(quiz_type: Quiz, count: usize) -> Vec<QuestionBox> {
             }
             Quiz::SquareArea => QuestionBox::Area(AreaQuestion::random()),
             Quiz::NoCourse => QuestionBox::Math(MathQuestion::new(0, 0, Quiz::NoCourse)),
-            Quiz::SevenFirstOrderEquation => {
-                QuestionBox::FirstOrderEquationQuestion(SevenFirstOrderEquationQuestion::random())
+            Quiz::FirstOrderEquation => {
+                QuestionBox::FirstOrderEquationQuestion(FirstOrderEquationQuestion::random())
             }
             Quiz::FirstDegreeDerivativeQuestion => {
                 QuestionBox::FirstDegreeDerivativeQuestion(FirstDegreeDerivativeQuestion::random())
@@ -195,18 +195,12 @@ pub fn generate_questions(quiz_type: Quiz, count: usize) -> Vec<QuestionBox> {
             Quiz::FractionComparison => {
                 QuestionBox::FractionComparison(FractionComparisonQuestion::random())
             }
-            Quiz::SixRounding => QuestionBox::SixRounding(SixRoundingQuestion::random()),
-            Quiz::SixAverage => QuestionBox::SixAverage(SixAverageQuestion::random()),
-            Quiz::SixMedian => QuestionBox::SixMedian(SixMedianQuestion::random()),
-            Quiz::SixFractionToDegree => {
-                QuestionBox::SixFractionToDegree(SixFractionToDegree::random())
-            }
-            Quiz::SevenPercentChange => {
-                QuestionBox::SevenPercentChange(SevenPercentChangeQuestion::random())
-            }
-            Quiz::EightExpression => {
-                QuestionBox::EightExpression(EightExpressionQuestion::random())
-            }
+            Quiz::Rounding => QuestionBox::SixRounding(RoundingQuestion::random()),
+            Quiz::Average => QuestionBox::SixAverage(AverageQuestion::random()),
+            Quiz::Median => QuestionBox::SixMedian(MedianQuestion::random()),
+            Quiz::FractionToDegree => QuestionBox::SixFractionToDegree(FractionToDegree::random()),
+            Quiz::PercentChange => QuestionBox::SevenPercentChange(PercentChangeQuestion::random()),
+            Quiz::Expression => QuestionBox::EightExpression(ExpressionQuestion::random()),
         };
 
         questions.push(question);

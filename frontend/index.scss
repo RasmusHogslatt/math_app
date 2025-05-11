@@ -234,7 +234,7 @@ textarea {
     }
 }
 
-.difficulty-section {
+.subject-section {
     margin-bottom: 12px;
     border: 1px solid $border-color-light;
     border-radius: $border-radius;
@@ -247,38 +247,43 @@ textarea {
         box-shadow: 0 3px 8px hsla($neutral-hue, 15%, 50%, 0.08);
     }
 
-    &.difficulty-YearOne {
+    &.subject-addition {
         border-left: 4px solid #8bc34a;
     }
 
-    &.difficulty-YearTwo {
+    &.subject-subtraction {
         border-left: 4px solid #4caf50;
     }
 
-    &.difficulty-YearThree {
+    &.subject-multiplication {
         border-left: 4px solid #03a9f4;
     }
 
-    &.difficulty-YearFour {
+    &.subject-division {
         border-left: 4px solid #2196f3;
     }
 
-    &.difficulty-YearFive {
+    &.subject-number {
         border-left: 4px solid #ff9800;
 
     }
 
-    &.difficulty-YearSix {
+    &.subject-geometry {
         border-left: 4px solid #ff5722;
 
     }
 
-    &.difficulty-YearSeven {
+    &.subject-statistics {
         border-left: 4px solid #f44336;
     }
 
-    &.difficulty-YearEight {
+    &.subject-algebra {
         border-left: 4px solid #9c27b0;
+
+    }
+
+    &.subject-random {
+        border-left: 4px solid #06011f;
 
     }
 }
@@ -301,7 +306,7 @@ textarea {
     }
 }
 
-.course-list {
+.quiz-list {
     list-style: none;
     padding: 0;
     margin: 0;
@@ -310,7 +315,7 @@ textarea {
     transition: max-height 0.4s cubic-bezier(0.25, 0.1, 0.25, 1),
         padding 0.4s ease;
 
-    .difficulty-section.expanded & {
+    .subject-section.expanded & {
         max-height: 400px;
         padding: 10px 0;
         border-top: 1px solid $border-color-light;

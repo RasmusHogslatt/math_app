@@ -1,4 +1,4 @@
-use crate::quiz::{Difficulty, Quiz};
+use crate::quiz::{Quiz, Subject};
 use std::{collections::BTreeMap, rc::Rc};
 use yew::prelude::*;
 
@@ -18,29 +18,29 @@ pub struct QuizSelectionProps {
 
 #[function_component(QuizSelect)]
 pub fn quiz_select(props: &QuizSelectionProps) -> Html {
-    // State to track which difficulty sections are expanded (true = expanded, false = collapsed)
+    // State to track which subject sections are expanded (true = expanded, false = collapsed)
     // Initialize all sections as collapsed (false)
     let collapsed_states = use_state(|| {
-        let mut map = BTreeMap::new();
+        let map = BTreeMap::new();
         // Optional: Initialize based on existing difficulties, or leave empty
         // If left empty, sections will default to collapsed when first encountered.
         // Or, you can pre-populate if needed:
-        map.insert(Difficulty::YearOne, false);
-        map.insert(Difficulty::YearTwo, false);
-        map.insert(Difficulty::YearThree, false);
+        // map.insert(Subject::YearOne, false);
+        // map.insert(Subject::YearTwo, false);
+        // map.insert(Subject::YearThree, false);
         map
     });
 
-    // Group courses by difficulty
-    let courses_by_difficulty = use_memo(props.options.clone(), |options| {
-        let mut grouped: BTreeMap<Difficulty, Vec<Quiz>> = BTreeMap::new();
+    // Group courses by subject
+    let quiz_by_subject = use_memo(props.options.clone(), |options| {
+        let mut grouped: BTreeMap<Subject, Vec<Quiz>> = BTreeMap::new();
         for course in options.iter() {
             if *course == Quiz::NoCourse {
                 // Skip NoCourse from the list
                 continue;
             }
             grouped
-                .entry(course.difficulty())
+                .entry(course.subject())
                 .or_insert_with(Vec::new)
                 .push(course.clone());
         }
@@ -51,39 +51,39 @@ pub fn quiz_select(props: &QuizSelectionProps) -> Html {
         <div class="quiz-select-container"> // Changed class name for clarity
             <h3>{"Välj en quiz"}</h3>
             {
-                courses_by_difficulty.iter().map(|(difficulty, courses)| {
-                    let difficulty_css_label = match difficulty {
-                        Difficulty::YearOne => "YearOne",
-                        Difficulty::YearTwo => "YearTwo",
-                        Difficulty::YearThree => "YearThree",
-                        Difficulty::YearFour => "YearFour",
-                        Difficulty::YearFive => "YearFive",
-                        Difficulty::YearSix => "YearSix",
-                        Difficulty::YearSeven => "YearSeven",
-                        Difficulty::YearEight => "YearEight",
-                        Difficulty::YearNine => "YearNine",
+                quiz_by_subject.iter().map(|(subject, quiz)| {
+                    let subject_css_label = match subject {
+                        Subject::Addition => "addition",
+                        Subject::Subtraction => "subtraction",
+                        Subject::Multiplication => "multiplication",
+                        Subject::Division => "division",
+                        Subject::Number => "number",
+                        Subject::Geometry => "geometry",
+                        Subject::Statisitics => "statistics",
+                        Subject::Algebra => "algebra",
+                        Subject::Random => "random",
                     };
-                    let difficulty_name = match difficulty {
-                        Difficulty::YearOne => "År 1",
-                        Difficulty::YearTwo => "År 2",
-                        Difficulty::YearThree => "År 3",
-                        Difficulty::YearFour => "År 4",
-                        Difficulty::YearFive => "År 5",
-                        Difficulty::YearSix => "År 6",
-                        Difficulty::YearSeven => "År 7",
-                        Difficulty::YearEight => "År 8",
-                        Difficulty::YearNine => "År 9",
+                    let subject_name = match subject {
+                       Subject::Addition => "Addition",
+                        Subject::Subtraction => "Subtraktion",
+                        Subject::Multiplication => "Multiplikation",
+                        Subject::Division => "Division",
+                        Subject::Number => "Tal",
+                        Subject::Geometry => "Geometri",
+                        Subject::Statisitics => "Statistik",
+                        Subject::Algebra => "Algebra",
+                        Subject::Random => "Blandat",
                     };
 
-                    let is_expanded = *collapsed_states.get(difficulty).unwrap_or(&false);
+                    let is_expanded = *collapsed_states.get(subject).unwrap_or(&false);
 
                     let on_toggle = {
                         let collapsed_states = collapsed_states.clone();
-                        let difficulty = *difficulty;
+                        let subject = *subject;
                         Callback::from(move |_| {
                             let mut new_states = (*collapsed_states).clone();
-                            let current_state = new_states.get(&difficulty).unwrap_or(&false);
-                            new_states.insert(difficulty, !current_state);
+                            let current_state = new_states.get(&subject).unwrap_or(&false);
+                            new_states.insert(subject, !current_state);
                             collapsed_states.set(new_states);
                         })
                     };
@@ -91,21 +91,21 @@ pub fn quiz_select(props: &QuizSelectionProps) -> Html {
                     let arrow = if is_expanded { "▼" } else { "▶" };
 
                     let section_classes = classes!(
-                        "difficulty-section",
-                        format!("difficulty-{}", difficulty_css_label),
+                        "subject-section",
+                        format!("subject-{}", subject_css_label),
                         is_expanded.then_some("expanded")
                     );
 
                     html! {
                         <div class={section_classes}>
                             <h4 class="collapsible-header" onclick={on_toggle}>
-                                { arrow } { difficulty_name }
+                                { arrow } { subject_name }
                             </h4>
                             { if is_expanded {
                                 html! {
-                                    <ul class="course-list">
+                                    <ul class="quiz-list">
                                         {
-                                            courses.iter().map(|course| {
+                                            quiz.iter().map(|course| {
                                                 let course_value = course.clone();
                                                 let on_click = {
                                                     let on_change = props.on_change.clone();
@@ -116,7 +116,7 @@ pub fn quiz_select(props: &QuizSelectionProps) -> Html {
                                                 };
 
                                                 let is_selected = &props.selected == course;
-                                                // Removed the individual difficulty class from li,
+                                                // Removed the individual subject class from li,
                                                 // it's now on the parent section. Keep .selected.
                                                 let item_class = if is_selected { "selected" } else { "" };
 

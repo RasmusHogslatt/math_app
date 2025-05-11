@@ -5,13 +5,13 @@ use crate::{quiz::Question, util::format_to_one_decimal};
 const DENOMINATOR_RANGE: (i32, i32) = (1, 12);
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct SixFractionToDegree {
+pub struct FractionToDegree {
     nominator: i32,
     denominator: i32,
     answer: String,
 }
 
-impl SixFractionToDegree {
+impl FractionToDegree {
     pub fn new(nominator: i32, denominator: i32) -> Self {
         let answer = (nominator as f32 / denominator as f32) * 360.0;
         Self {
@@ -29,7 +29,7 @@ impl SixFractionToDegree {
     }
 }
 
-impl Question for SixFractionToDegree {
+impl Question for FractionToDegree {
     fn prompt(&self) -> String {
         format!(
             "Hur många grader är {}/{}-delar av en cirkel?",
