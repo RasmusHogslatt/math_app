@@ -464,7 +464,7 @@ textarea {
 }
 
 // --- Component: Number Comparison ---
-.number-comparison-container {
+.choice-button-quiz-container {
     width: 100%; // Takes width from parent (.quiz-section)
     text-align: center;
 
@@ -478,7 +478,7 @@ textarea {
     }
 }
 
-.comparison-options {
+.choice-options {
     display: flex;
     flex-wrap: wrap; // Allow wrapping on smaller screens if needed
     align-items: stretch; // Make buttons same height
@@ -487,7 +487,7 @@ textarea {
     gap: 30px; // More space around options
 }
 
-.comparison-option {
+.choice-option-button {
     // The clickable number buttons
     @include button-style(hsl($neutral-hue, 20%, 90%), $text-color); // Light grey button
     padding: 25px 40px;

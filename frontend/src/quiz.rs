@@ -215,7 +215,97 @@ pub fn generate_questions(quiz_type: Quiz, count: usize) -> Vec<QuestionBox> {
     questions
 }
 
-pub trait TwoChoiceQuestionProvider: Question + Clone + PartialEq + std::fmt::Debug {
-    fn first_choice_display(&self) -> String;
-    fn second_choice_display(&self) -> String;
+#[derive(Clone, Debug, PartialEq)]
+pub struct Choice {
+    pub display_text: String,
+    pub value: String, // The value to emit when this choice is selected, and to be checked by `check_answer`
 }
+pub trait MultipleChoiceQuestionProvider: Question + Clone + PartialEq + std::fmt::Debug {
+    fn get_choices(&self) -> Vec<Choice>;
+}
+
+// quizzes/simple_addition_choice_quiz.rs (new file)
+// use crate::quiz::{Choice, Question, MultipleChoiceQuestionProvider};
+// use rand::Rng;
+
+// #[derive(Clone, Debug, PartialEq)]
+// pub struct SimpleAdditionChoiceQuestion {
+//     term1: i32,
+//     term2: i32,
+//     choices_values: Vec<i32>, // Values for the buttons
+//     correct_answer_value: i32,
+// }
+
+// impl SimpleAdditionChoiceQuestion {
+//     pub fn random() -> Self {
+//         let mut rng = rand::thread_rng();
+//         let term1 = 2; // Fixed for "What is 2 + X?"
+//         let term2 = rng.gen_range(1..=10);
+//         let correct_result = term1 + term2;
+
+//         let mut choices_values = vec![correct_result];
+//         // Generate 2 or 3 wrong answers
+//         let num_wrong_answers = rng.gen_range(2..=3); // For 3 or 4 total choices
+//         while choices_values.len() < (1 + num_wrong_answers) {
+//             let wrong_offset = rng.gen_range(-3..=3);
+//             if wrong_offset == 0 { continue; } // Avoid same as correct or other wrong answers
+//             let wrong_answer = correct_result + wrong_offset;
+//             if !choices_values.contains(&wrong_answer) {
+//                 choices_values.push(wrong_answer);
+//             }
+//         }
+//         use rand::seq::SliceRandom;
+//         choices_values.shuffle(&mut rng); // Shuffle the choices
+
+//         Self {
+//             term1,
+//             term2,
+//             choices_values,
+//             correct_answer_value: correct_result,
+//         }
+//     }
+// }
+
+// impl Question for SimpleAdditionChoiceQuestion {
+//     fn prompt(&self) -> String {
+//         format!("Vad blir {} + {}?", self.term1, self.term2)
+//     }
+
+//     // This answer() is for showing the correct answer if the user gets it wrong.
+//     // The `Choice.value` is what's used for button clicks.
+//     fn answer(&self) -> &str {
+//         // This might be tricky if you only have the value. You might need to store
+//         // the correct answer string explicitly or reconstruct it.
+//         // For now, let's assume check_answer handles the logic.
+//         // If you need to display the correct choice's text, you might need to find it in get_choices().
+//         // For simplicity here, we are matching against the numeric value.
+//         // A better approach might be to have `correct_choice_value: String` in the struct.
+//         // This example focuses on `check_answer` using the stringified numeric value.
+//         Box::leak(self.correct_answer_value.to_string().into_boxed_str())
+//     }
+
+//     fn check_answer(&self, answer: &str) -> bool {
+//         // `answer` will be the stringified value from the Choice struct
+//         if let Ok(ans_val) = answer.parse::<i32>() {
+//             ans_val == self.correct_answer_value
+//         } else {
+//             false
+//         }
+//     }
+
+//     fn display(&self) -> String {
+//         self.prompt()
+//     }
+// }
+
+// impl MultipleChoiceQuestionProvider for SimpleAdditionChoiceQuestion {
+//     fn get_choices(&self) -> Vec<Choice> {
+//         self.choices_values
+//             .iter()
+//             .map(|val| Choice {
+//                 display_text: val.to_string(),
+//                 value: val.to_string(), // Send the number as a string
+//             })
+//             .collect()
+//     }
+// }

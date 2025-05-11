@@ -401,11 +401,11 @@ textarea:focus {
   transform: none;
 }
 
-.number-comparison-container {
+.choice-button-quiz-container {
   width: 100%;
   text-align: center;
 }
-.number-comparison-container h2 {
+.choice-button-quiz-container h2 {
   font-size: 1.8rem;
   margin-bottom: 1.5em;
   line-height: 1.4;
@@ -413,7 +413,7 @@ textarea:focus {
   font-family: "Noto Sans Math", "Noto Sans JP", "Noto Sans Math", sans-serif;
 }
 
-.comparison-options {
+.choice-options {
   display: flex;
   flex-wrap: wrap;
   align-items: stretch;
@@ -422,7 +422,7 @@ textarea:focus {
   gap: 30px;
 }
 
-.comparison-option {
+.choice-option-button {
   display: inline-block;
   padding: 10px 20px;
   font-size: 16px;
@@ -447,23 +447,23 @@ textarea:focus {
   min-width: 150px;
   max-width: 250px;
 }
-.comparison-option:hover:not(:disabled) {
+.choice-option-button:hover:not(:disabled) {
   background-color: #f9fafb;
   transform: translateY(-2px);
   box-shadow: 0 6px 16px hsla(215, 20%, 50%, 0.15);
 }
-.comparison-option:active:not(:disabled) {
+.choice-option-button:active:not(:disabled) {
   transform: translateY(0);
   box-shadow: 0 1px 3px hsla(0, 0%, 0%, 0.1);
 }
-.comparison-option:disabled {
+.choice-option-button:disabled {
   background-color: white;
   color: #bfbfbf;
   cursor: not-allowed;
   box-shadow: none;
   transform: none;
 }
-.comparison-option:hover:not(:disabled) {
+.choice-option-button:hover:not(:disabled) {
   background-color: hsl(215, 20%, 85%);
   border-color: hsl(215, 20%, 75%);
   transform: translateY(-3px) scale(1.02);

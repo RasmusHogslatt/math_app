@@ -1,5 +1,5 @@
 use crate::{
-    components::TwoChoiceButtonComponent,
+    components::ChoiceButtonQuizComponent,
     quiz::{Question, QuestionBox},
     quizzes::{FractionComparisonQuestion, NumberComparisonQuestion},
 };
@@ -61,10 +61,9 @@ pub fn quiz_session(props: &QuizSectionProps) -> Html {
             {
                 // Choose which component to render based on the question type
                 match &props.question {
-                     QuestionBox::NumberComparison(question) => {
+                    QuestionBox::NumberComparison(question) => {
                         html! {
-                            // Pass the concrete NumberComparisonQuestion type
-                            <TwoChoiceButtonComponent<NumberComparisonQuestion>
+                            <ChoiceButtonQuizComponent<NumberComparisonQuestion>
                                 question={question.clone()}
                                 on_answer={props.on_answer.clone()}
                             />
@@ -72,13 +71,21 @@ pub fn quiz_session(props: &QuizSectionProps) -> Html {
                     },
                     QuestionBox::FractionComparison(question) => {
                         html! {
-                            // Pass the concrete FractionComparisonQuestion type
-                            <TwoChoiceButtonComponent<FractionComparisonQuestion>
+                            <ChoiceButtonQuizComponent<FractionComparisonQuestion>
                                 question={question.clone()}
                                 on_answer={props.on_answer.clone()}
                             />
                         }
                     },
+                    // Example: If you add a new question type that uses this component
+                    // QuestionBox::YourNewMultiChoiceQuestion(question) => {
+                    // html! {
+                    // <ChoiceButtonQuizComponent<YourNewMultiChoiceQuestionType>
+                    // question={question.clone()}
+                    // on_answer={props.on_answer.clone()}
+                    // />
+                    // }
+                    // },
                     _ => {
                         html! {
                             <div class="question">

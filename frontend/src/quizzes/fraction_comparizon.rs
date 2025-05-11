@@ -1,5 +1,5 @@
 use super::NumberValue;
-use crate::quiz::{Question, TwoChoiceQuestionProvider};
+use crate::quiz::{Choice, MultipleChoiceQuestionProvider, Question};
 use std::cmp::Ordering;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -81,20 +81,21 @@ impl Question for FractionComparisonQuestion {
 
     // Override display to customize the output
     fn display(&self) -> String {
-        format!(
-            "Vilket bråk är störst: {} eller {}?",
-            self.first_value.display(),
-            self.second_value.display()
-        )
+        format!("Vilket bråk är störst?",)
     }
 }
 
-impl TwoChoiceQuestionProvider for FractionComparisonQuestion {
-    fn first_choice_display(&self) -> String {
-        self.first_value.display()
-    }
-
-    fn second_choice_display(&self) -> String {
-        self.second_value.display()
+impl MultipleChoiceQuestionProvider for FractionComparisonQuestion {
+    fn get_choices(&self) -> Vec<Choice> {
+        vec![
+            Choice {
+                display_text: self.first_value.display(),
+                value: "0".to_string(),
+            },
+            Choice {
+                display_text: self.second_value.display(),
+                value: "1".to_string(),
+            },
+        ]
     }
 }

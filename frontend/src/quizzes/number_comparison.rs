@@ -1,4 +1,4 @@
-use crate::quiz::{Question, TwoChoiceQuestionProvider};
+use crate::quiz::{Choice, MultipleChoiceQuestionProvider, Question};
 use rand::Rng;
 use std::cmp::Ordering;
 
@@ -143,26 +143,29 @@ impl Question for NumberComparisonQuestion {
         match answer {
             "0" => self.correct_answer == 0,
             "1" => self.correct_answer == 1,
+            // If you ever have an "equal" option as a third button for this type:
+            // "2" => self.correct_answer == 2,
             _ => false,
         }
     }
 
     // Override display to customize the output
     fn display(&self) -> String {
-        format!(
-            "Vilket värde är störst: {} eller {}?",
-            self.first_value.display(),
-            self.second_value.display()
-        )
+        format!("Vilket värde är störst?",)
     }
 }
 
-impl TwoChoiceQuestionProvider for NumberComparisonQuestion {
-    fn first_choice_display(&self) -> String {
-        self.first_value.display()
-    }
-
-    fn second_choice_display(&self) -> String {
-        self.second_value.display()
+impl MultipleChoiceQuestionProvider for NumberComparisonQuestion {
+    fn get_choices(&self) -> Vec<Choice> {
+        vec![
+            Choice {
+                display_text: self.first_value.display(),
+                value: "0".to_string(), // Corresponds to first_value
+            },
+            Choice {
+                display_text: self.second_value.display(),
+                value: "1".to_string(), // Corresponds to second_value
+            },
+        ]
     }
 }
