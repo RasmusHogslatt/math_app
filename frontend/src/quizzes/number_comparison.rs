@@ -1,4 +1,4 @@
-use crate::quiz::Question;
+use crate::quiz::{Question, TwoChoiceQuestionProvider};
 use rand::Rng;
 use std::cmp::Ordering;
 
@@ -154,5 +154,15 @@ impl Question for NumberComparisonQuestion {
             self.first_value.display(),
             self.second_value.display()
         )
+    }
+}
+
+impl TwoChoiceQuestionProvider for NumberComparisonQuestion {
+    fn first_choice_display(&self) -> String {
+        self.first_value.display()
+    }
+
+    fn second_choice_display(&self) -> String {
+        self.second_value.display()
     }
 }

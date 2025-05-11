@@ -1,6 +1,7 @@
 use crate::{
-    components::{FractionComparisonComponent, NumberComparisonComponent},
+    components::TwoChoiceButtonComponent,
     quiz::{Question, QuestionBox},
+    quizzes::{FractionComparisonQuestion, NumberComparisonQuestion},
 };
 use web_time::Duration;
 use yew::prelude::*;
@@ -60,9 +61,10 @@ pub fn quiz_session(props: &QuizSectionProps) -> Html {
             {
                 // Choose which component to render based on the question type
                 match &props.question {
-                    QuestionBox::NumberComparison(question) => {
+                     QuestionBox::NumberComparison(question) => {
                         html! {
-                            <NumberComparisonComponent
+                            // Pass the concrete NumberComparisonQuestion type
+                            <TwoChoiceButtonComponent<NumberComparisonQuestion>
                                 question={question.clone()}
                                 on_answer={props.on_answer.clone()}
                             />
@@ -70,7 +72,8 @@ pub fn quiz_session(props: &QuizSectionProps) -> Html {
                     },
                     QuestionBox::FractionComparison(question) => {
                         html! {
-                            <FractionComparisonComponent
+                            // Pass the concrete FractionComparisonQuestion type
+                            <TwoChoiceButtonComponent<FractionComparisonQuestion>
                                 question={question.clone()}
                                 on_answer={props.on_answer.clone()}
                             />

@@ -214,3 +214,8 @@ pub fn generate_questions(quiz_type: Quiz, count: usize) -> Vec<QuestionBox> {
 
     questions
 }
+
+pub trait TwoChoiceQuestionProvider: Question + Clone + PartialEq + std::fmt::Debug {
+    fn first_choice_display(&self) -> String;
+    fn second_choice_display(&self) -> String;
+}

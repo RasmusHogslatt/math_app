@@ -10,3 +10,5 @@ pub mod quiz_result;
 pub use quiz_result::*;
 pub mod fraction_comparison_component;
 pub use fraction_comparison_component::*;
+pub mod two_choice_button;
+pub use two_choice_button::*;

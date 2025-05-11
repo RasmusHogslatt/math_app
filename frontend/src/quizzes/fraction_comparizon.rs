@@ -1,5 +1,5 @@
 use super::NumberValue;
-use crate::quiz::Question;
+use crate::quiz::{Question, TwoChoiceQuestionProvider};
 use std::cmp::Ordering;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -86,5 +86,15 @@ impl Question for FractionComparisonQuestion {
             self.first_value.display(),
             self.second_value.display()
         )
+    }
+}
+
+impl TwoChoiceQuestionProvider for FractionComparisonQuestion {
+    fn first_choice_display(&self) -> String {
+        self.first_value.display()
+    }
+
+    fn second_choice_display(&self) -> String {
+        self.second_value.display()
     }
 }
