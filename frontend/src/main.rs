@@ -39,6 +39,7 @@ fn app() -> Html {
         Quiz::SevenFirstOrderEquation,
         Quiz::FirstDegreeDerivativeQuestion,
         Quiz::NumberComparison,
+        Quiz::FractionComparison,
         Quiz::SixRounding,
         Quiz::SixAverage,
         Quiz::SixMedian,

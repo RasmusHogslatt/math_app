@@ -88,9 +88,8 @@ impl NumberComparisonQuestion {
 
     pub fn random() -> Self {
         let mut rng = rand::rng();
-        let use_different_types = rng.random_bool(0.7); // 70% chance to mix fraction and decimal
 
-        let (first, second) = if use_different_types {
+        let (first, second) =
             // Mix fraction and decimal
             if rng.random_bool(0.5) {
                 (
@@ -102,21 +101,7 @@ impl NumberComparisonQuestion {
                     NumberValue::random_decimal(&mut rng),
                     NumberValue::random_fraction(&mut rng),
                 )
-            }
-        } else {
-            // Both same type
-            if rng.random_bool(0.5) {
-                (
-                    NumberValue::random_fraction(&mut rng),
-                    NumberValue::random_fraction(&mut rng),
-                )
-            } else {
-                (
-                    NumberValue::random_decimal(&mut rng),
-                    NumberValue::random_decimal(&mut rng),
-                )
-            }
-        };
+            };
 
         // Ensure they're not equal
         if (first.as_f64() - second.as_f64()).abs() < 0.0001 {

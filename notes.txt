@@ -6,8 +6,14 @@ more courses per year levels
 
 ssh root@159.223.1.36
 
-run "cargo sqlx prepare --workspace -- --bin backend"
-to generate metadata for offline compilation during github actions workflow.
-redeploy
+Click on missing operator: A _ B = C
 
-1/4 varv = 90 grader
+Click on bigger fraction. Only have fraction/decimal now
+
+How many decimal points are valid
+
+Perimeter of shapes
+
+Volume of shapes
+
+Divisibility with N? Is 123 divisible by 3? etc

@@ -1,5 +1,5 @@
 use crate::{
-    components::NumberComparisonComponent,
+    components::{FractionComparisonComponent, NumberComparisonComponent},
     quiz::{Question, QuestionBox},
 };
 use web_time::Duration;
@@ -63,6 +63,14 @@ pub fn quiz_session(props: &QuizSectionProps) -> Html {
                     QuestionBox::NumberComparison(question) => {
                         html! {
                             <NumberComparisonComponent
+                                question={question.clone()}
+                                on_answer={props.on_answer.clone()}
+                            />
+                        }
+                    },
+                    QuestionBox::FractionComparison(question) => {
+                        html! {
+                            <FractionComparisonComponent
                                 question={question.clone()}
                                 on_answer={props.on_answer.clone()}
                             />

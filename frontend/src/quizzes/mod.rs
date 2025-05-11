@@ -20,3 +20,5 @@ pub mod eight_expressions;
 pub use eight_expressions::*;
 pub mod six_fraction_to_degree;
 pub use six_fraction_to_degree::*;
+pub mod fraction_comparizon;
+pub use fraction_comparizon::*;

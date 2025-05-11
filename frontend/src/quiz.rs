@@ -33,6 +33,7 @@ pub enum Quiz {
     SevenFirstOrderEquation,
     FirstDegreeDerivativeQuestion,
     NumberComparison,
+    FractionComparison,
     SixRounding,
     SixAverage,
     SixMedian,
@@ -56,6 +57,7 @@ impl Display for Quiz {
                 write!(f, "Första gradens derivata")
             }
             Quiz::NumberComparison => write!(f, "Störst värde"),
+            Quiz::FractionComparison => write!(f, "Störst bråk"),
             Quiz::SixRounding => write!(f, "Avrundning"),
             Quiz::SixAverage => write!(f, "Medelvärde"),
             Quiz::SixMedian => write!(f, "Median"),
@@ -77,6 +79,7 @@ impl Quiz {
             Quiz::SevenFirstOrderEquation => Difficulty::YearSeven,
             Quiz::FirstDegreeDerivativeQuestion => Difficulty::YearEight,
             Quiz::NumberComparison => Difficulty::YearFive,
+            Quiz::FractionComparison => Difficulty::YearFive,
             Quiz::SixRounding => Difficulty::YearSix,
             Quiz::SixAverage => Difficulty::YearSix,
             Quiz::SixMedian => Difficulty::YearSix,
@@ -107,6 +110,7 @@ pub enum QuestionBox {
     FirstOrderEquationQuestion(SevenFirstOrderEquationQuestion),
     FirstDegreeDerivativeQuestion(FirstDegreeDerivativeQuestion),
     NumberComparison(NumberComparisonQuestion),
+    FractionComparison(FractionComparisonQuestion),
     SixRounding(SixRoundingQuestion),
     SixAverage(SixAverageQuestion),
     SixMedian(SixMedianQuestion),
@@ -123,6 +127,7 @@ impl Question for QuestionBox {
             QuestionBox::FirstOrderEquationQuestion(q) => q.prompt(),
             QuestionBox::FirstDegreeDerivativeQuestion(q) => q.prompt(),
             QuestionBox::NumberComparison(q) => q.prompt(),
+            QuestionBox::FractionComparison(q) => q.prompt(),
             QuestionBox::SixRounding(q) => q.prompt(),
             QuestionBox::SixAverage(q) => q.prompt(),
             QuestionBox::SixMedian(q) => q.prompt(),
@@ -139,6 +144,7 @@ impl Question for QuestionBox {
             QuestionBox::FirstOrderEquationQuestion(q) => q.answer(),
             QuestionBox::FirstDegreeDerivativeQuestion(q) => q.answer(),
             QuestionBox::NumberComparison(q) => q.answer(),
+            QuestionBox::FractionComparison(q) => q.answer(),
             QuestionBox::SixRounding(q) => q.answer(),
             QuestionBox::SixAverage(q) => q.answer(),
             QuestionBox::SixMedian(q) => q.answer(),
@@ -155,6 +161,7 @@ impl Question for QuestionBox {
             QuestionBox::FirstOrderEquationQuestion(q) => q.check_answer(answer),
             QuestionBox::FirstDegreeDerivativeQuestion(q) => q.check_answer(answer),
             QuestionBox::NumberComparison(q) => q.check_answer(answer),
+            QuestionBox::FractionComparison(q) => q.check_answer(answer),
             QuestionBox::SixRounding(q) => q.check_answer(answer),
             QuestionBox::SixAverage(q) => q.check_answer(answer),
             QuestionBox::SixMedian(q) => q.check_answer(answer),
@@ -184,6 +191,9 @@ pub fn generate_questions(quiz_type: Quiz, count: usize) -> Vec<QuestionBox> {
             }
             Quiz::NumberComparison => {
                 QuestionBox::NumberComparison(NumberComparisonQuestion::random())
+            }
+            Quiz::FractionComparison => {
+                QuestionBox::FractionComparison(FractionComparisonQuestion::random())
             }
             Quiz::SixRounding => QuestionBox::SixRounding(SixRoundingQuestion::random()),
             Quiz::SixAverage => QuestionBox::SixAverage(SixAverageQuestion::random()),
