@@ -57,8 +57,6 @@ impl MathQuestion {
             Quiz::Division => {
                 let a = rng.random_range(2..20);
                 let b = rng.random_range(1..a);
-                let a = 13;
-                let b = 4;
                 Self::new(a, b, operation)
             }
             _ => Self::new(0, 0, operation),
