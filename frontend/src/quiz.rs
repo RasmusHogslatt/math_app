@@ -29,6 +29,7 @@ pub enum Quiz {
     Addition,
     Subtraction,
     Multiplication,
+    Division,
     SquareArea,
     FirstOrderEquation,
     FirstDegreeDerivativeQuestion,
@@ -49,6 +50,7 @@ impl Display for Quiz {
             Quiz::Addition => write!(f, "Addition"),
             Quiz::Subtraction => write!(f, "Subtraktion"),
             Quiz::Multiplication => write!(f, "Multiplikation"),
+            Quiz::Division => write!(f, "Division"),
             Quiz::SquareArea => write!(f, "Area"),
             Quiz::FirstOrderEquation => {
                 write!(f, "Första ordningens ekvation")
@@ -75,6 +77,7 @@ impl Quiz {
             Quiz::Addition => Subject::Addition,
             Quiz::Subtraction => Subject::Subtraction,
             Quiz::Multiplication => Subject::Multiplication,
+            Quiz::Division => Subject::Division,
             Quiz::SquareArea => Subject::Geometry,
             Quiz::FirstOrderEquation => Subject::Algebra,
             Quiz::FirstDegreeDerivativeQuestion => Subject::Algebra,
@@ -178,7 +181,7 @@ pub fn generate_questions(quiz_type: Quiz, count: usize) -> Vec<QuestionBox> {
 
     for _ in 0..count {
         let question = match quiz_type {
-            Quiz::Addition | Quiz::Subtraction | Quiz::Multiplication => {
+            Quiz::Addition | Quiz::Subtraction | Quiz::Multiplication | Quiz::Division => {
                 QuestionBox::Math(MathQuestion::random(quiz_type))
             }
             Quiz::SquareArea => QuestionBox::Area(AreaQuestion::random()),

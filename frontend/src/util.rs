@@ -13,48 +13,30 @@ pub fn format_to_one_decimal(value: f32) -> String {
     }
 }
 
-pub fn validate_input(expected_answer: &str, user_answer: &str) -> bool {
-    // Trim whitespace from user input
-    let user_answer = user_answer.trim();
+pub fn validate_input(expected_answer_str: &str, user_answer_str: &str) -> bool {
+    let trimmed_user_answer = user_answer_str.trim();
 
-    // Direct string comparison (case where formats match exactly)
-    if expected_answer == user_answer {
+    //1. Direct comparison
+    if expected_answer_str == trimmed_user_answer {
         return true;
     }
 
-    // Try to parse as f32 to handle numeric equivalence
-    if let (Ok(expected_value), Ok(user_value)) =
-        (expected_answer.parse::<f32>(), user_answer.parse::<f32>())
-    {
-        // Check if they're essentially the same number
-        if (expected_value - user_value).abs() < 0.0001 {
+    // Attempt to parse both expected and user answers as f32.
+    let expected_parse_result = expected_answer_str.parse::<f32>();
+    let user_parse_result = trimmed_user_answer.parse::<f32>();
+
+    if let (Ok(expected_val), Ok(user_val)) = (expected_parse_result, user_parse_result) {
+        if (expected_val - user_val).abs() < 0.0001 {
+            return true;
+        }
+
+        let normalized_expected_str = format_to_one_decimal(expected_val);
+        let normalized_user_str = format_to_one_decimal(user_val);
+
+        if normalized_expected_str == normalized_user_str {
             return true;
         }
     }
 
-    // Handle cases where there might be different decimal representations
-    let normalized_expected = normalize_number_format(expected_answer);
-    let normalized_user = normalize_number_format(user_answer);
-
-    if normalized_expected == normalized_user {
-        return true;
-    }
-
     false
-}
-
-fn normalize_number_format(number_str: &str) -> String {
-    if let Ok(value) = number_str.parse::<f32>() {
-        // Format all numbers consistently
-        if value.fract() < 0.0001 {
-            // It's essentially a whole number
-            return format!("{}", value.round() as i32);
-        } else {
-            // It has a fractional part - format with 1 decimal place
-            return format!("{:.1}", value);
-        }
-    }
-
-    // If parsing fails, return the original string
-    number_str.to_string()
 }

@@ -12,11 +12,18 @@ pub struct MathQuestion {
 
 impl MathQuestion {
     pub fn new(first: i32, second: i32, operation: Quiz) -> Self {
-        let result = match operation {
-            Quiz::Addition => first + second,
-            Quiz::Subtraction => first - second,
-            Quiz::Multiplication => first * second,
-            _ => 0,
+        let result: f32 = match operation {
+            Quiz::Addition => (first + second) as f32,
+            Quiz::Subtraction => (first - second) as f32,
+            Quiz::Multiplication => (first * second) as f32,
+            Quiz::Division => {
+                if second != 0 {
+                    first as f32 / second as f32
+                } else {
+                    0.0
+                }
+            }
+            _ => 0.0,
         };
 
         Self {
@@ -47,6 +54,13 @@ impl MathQuestion {
                 let b = rng.random_range(1..10);
                 Self::new(a, b, operation)
             }
+            Quiz::Division => {
+                let a = rng.random_range(2..20);
+                let b = rng.random_range(1..a);
+                let a = 13;
+                let b = 4;
+                Self::new(a, b, operation)
+            }
             _ => Self::new(0, 0, operation),
         }
     }
@@ -59,6 +73,9 @@ impl Question for MathQuestion {
             Quiz::Subtraction => format!("Beräkna {} - {}?", self.first_number, self.second_number),
             Quiz::Multiplication => {
                 format!("Beräkna {} × {}?", self.first_number, self.second_number)
+            }
+            Quiz::Division => {
+                format!("Beräkna {} ÷ {}?", self.first_number, self.second_number)
             }
             _ => "Något gick fel".to_string(),
         }

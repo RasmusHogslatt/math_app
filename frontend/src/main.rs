@@ -35,6 +35,7 @@ fn app() -> Html {
         Quiz::Addition,
         Quiz::Subtraction,
         Quiz::Multiplication,
+        Quiz::Division,
         Quiz::SquareArea,
         Quiz::FirstOrderEquation,
         Quiz::FirstDegreeDerivativeQuestion,
