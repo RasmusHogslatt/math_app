@@ -91,6 +91,27 @@ impl Quiz {
             Quiz::Expression => Subject::Algebra,
         }
     }
+
+    pub fn number_of_questions(&self) -> usize {
+        match self {
+            Quiz::NoCourse => 1,
+            Quiz::Addition => 10,
+            Quiz::Subtraction => 10,
+            Quiz::Multiplication => 10,
+            Quiz::Division => 10,
+            Quiz::SquareArea => 10,
+            Quiz::FirstOrderEquation => 10,
+            Quiz::FirstDegreeDerivativeQuestion => 10,
+            Quiz::NumberComparison => 10,
+            Quiz::FractionComparison => 10,
+            Quiz::Rounding => 10,
+            Quiz::Average => 10,
+            Quiz::Median => 10,
+            Quiz::FractionToDegree => 10,
+            Quiz::PercentChange => 10,
+            Quiz::Expression => 10,
+        }
+    }
 }
 
 pub trait Question {

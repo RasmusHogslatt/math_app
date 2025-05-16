@@ -3,7 +3,6 @@ pub mod components;
 mod quiz;
 mod quizzes;
 mod util;
-
 use common::User;
 use components::Leaderboard;
 use components::QuizSelect;
@@ -17,6 +16,7 @@ use web_sys::console;
 use web_time::{Duration, Instant};
 use yew::functional::*;
 use yew::prelude::*;
+
 #[derive(Clone, PartialEq)]
 enum AppState {
     Selection,
@@ -58,9 +58,6 @@ fn app() -> Html {
     let interval_ref = use_mut_ref(|| None::<Interval>);
     let failed_question_details = use_state(|| None::<(QuestionBox, String)>);
 
-    // Total number of questions
-    let total_questions = 10;
-
     // Course selection handler
     let on_course_change = {
         let course = course.clone();
@@ -75,8 +72,7 @@ fn app() -> Html {
         let app_state = app_state.clone();
         let questions = questions.clone();
         let current_question = current_question.clone();
-        let start_time = start_time.clone();
-        let start_time_handle = start_time.clone();
+        let start_time_state_handle = start_time.clone();
         let elapsed_time = elapsed_time.clone();
         let interval_ref = interval_ref.clone();
 
@@ -90,14 +86,21 @@ fn app() -> Html {
                     .into(),
                 );
 
+                let number_questions_for_quiz = course.number_of_questions();
+                if number_questions_for_quiz == 0 {
+                    web_sys::console::log_1(&"Cannot start quiz: 0 questions configured.".into());
+                    return;
+                }
+
                 // Generate questions based on selected course
-                let generated_questions = generate_questions(*course.clone(), total_questions);
+                let generated_questions =
+                    generate_questions(*course.clone(), number_questions_for_quiz);
                 questions.set(generated_questions);
                 current_question.set(0);
 
                 // Reset timer
                 let quiz_start_instant = Instant::now();
-                start_time_handle.set(quiz_start_instant);
+                start_time_state_handle.set(quiz_start_instant);
                 elapsed_time.set(Duration::from_secs(0));
 
                 web_sys::console::log_2(
@@ -137,11 +140,16 @@ fn app() -> Html {
 
         Callback::from(move |answer: String| {
             let current_q = *current_question;
+            let total_questions_for_current_quiz = (*questions).len();
+            if total_questions_for_current_quiz == 0 {
+                // Should not happen if on_start_quiz has guards
+                return;
+            }
             // Ensure we don't panic if questions isn't populated somehow
             if let Some(q) = (*questions).get(current_q) {
                 if q.check_answer(&answer) {
-                    // Correct Answer Logic (no change)
-                    if current_q + 1 >= total_questions {
+                    // Correct Answer Logic
+                    if current_q + 1 >= total_questions_for_current_quiz {
                         if let Some(handle) = interval_ref.borrow_mut().take() {
                             handle.cancel();
                         }
@@ -258,6 +266,7 @@ fn app() -> Html {
                             },
                             AppState::Quiz => {
                                 let current_q = *current_question;
+                                let total_questions_for_current_quiz = (*questions).len();
                                 if current_q < (*questions).len() {
                                     let question = (*questions)[current_q].clone();
                                     html! {
@@ -265,7 +274,7 @@ fn app() -> Html {
                                             question={question}
                                             elapsed_time={*elapsed_time}
                                             current_question={current_q}
-                                            total_questions={total_questions}
+                                            total_questions={total_questions_for_current_quiz}
                                             on_answer={on_answer.clone()}
                                         />
                                     }
