@@ -26,10 +26,12 @@ pub enum Subject {
 #[derive(Clone, PartialEq, Debug, Copy, Eq, Hash)]
 pub enum Quiz {
     NoCourse,
-    Addition,
-    Subtraction,
-    Multiplication,
-    Division,
+    Addition1_10,
+    Addition100,
+    Subtraction1_10,
+    Multiplication1_10,
+    Multiplication1_20,
+    Division1_10,
     SquareArea,
     FirstOrderEquation,
     FirstDegreeDerivativeQuestion,
@@ -47,10 +49,12 @@ impl Display for Quiz {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Quiz::NoCourse => write!(f, "Välj en quiz"),
-            Quiz::Addition => write!(f, "Addition"),
-            Quiz::Subtraction => write!(f, "Subtraktion"),
-            Quiz::Multiplication => write!(f, "Multiplikation"),
-            Quiz::Division => write!(f, "Division"),
+            Quiz::Addition1_10 => write!(f, "Addition 1-10"),
+            Quiz::Addition100 => write!(f, "Addition 100-999"),
+            Quiz::Subtraction1_10 => write!(f, "Subtraktion 1-10"),
+            Quiz::Multiplication1_10 => write!(f, "Multiplikation 1-10"),
+            Quiz::Multiplication1_20 => write!(f, "Multiplikation 1-20"),
+            Quiz::Division1_10 => write!(f, "Division 1-10"),
             Quiz::SquareArea => write!(f, "Area"),
             Quiz::FirstOrderEquation => {
                 write!(f, "Första ordningens ekvation")
@@ -74,10 +78,12 @@ impl Quiz {
     pub fn subject(&self) -> Subject {
         match self {
             Quiz::NoCourse => Subject::Addition,
-            Quiz::Addition => Subject::Addition,
-            Quiz::Subtraction => Subject::Subtraction,
-            Quiz::Multiplication => Subject::Multiplication,
-            Quiz::Division => Subject::Division,
+            Quiz::Addition1_10 => Subject::Addition,
+            Quiz::Addition100 => Subject::Addition,
+            Quiz::Subtraction1_10 => Subject::Subtraction,
+            Quiz::Multiplication1_10 => Subject::Multiplication,
+            Quiz::Multiplication1_20 => Subject::Multiplication,
+            Quiz::Division1_10 => Subject::Division,
             Quiz::SquareArea => Subject::Geometry,
             Quiz::FirstOrderEquation => Subject::Algebra,
             Quiz::FirstDegreeDerivativeQuestion => Subject::Algebra,
@@ -95,10 +101,12 @@ impl Quiz {
     pub fn number_of_questions(&self) -> usize {
         match self {
             Quiz::NoCourse => 1,
-            Quiz::Addition => 10,
-            Quiz::Subtraction => 10,
-            Quiz::Multiplication => 10,
-            Quiz::Division => 10,
+            Quiz::Addition1_10 => 10,
+            Quiz::Addition100 => 10,
+            Quiz::Subtraction1_10 => 10,
+            Quiz::Multiplication1_10 => 10,
+            Quiz::Multiplication1_20 => 10,
+            Quiz::Division1_10 => 10,
             Quiz::SquareArea => 10,
             Quiz::FirstOrderEquation => 10,
             Quiz::FirstDegreeDerivativeQuestion => 10,
@@ -129,7 +137,12 @@ pub trait Question {
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum QuestionBox {
-    Math(MathQuestion),
+    Addition1_10(AdditionQuestion1_10),
+    Addition100(AdditionQuestion100),
+    Subtraction1_10(SubtractionQuestion1_10),
+    Multiplication1_10(MultiplicationQuestion1_10),
+    Multiplication1_20(MultiplicationQuestion1_20),
+    Division1_10(DivisionQuestion1_10),
     Area(AreaQuestion),
     FirstOrderEquationQuestion(FirstOrderEquationQuestion),
     FirstDegreeDerivativeQuestion(FirstDegreeDerivativeQuestion),
@@ -146,7 +159,12 @@ pub enum QuestionBox {
 impl Question for QuestionBox {
     fn prompt(&self) -> String {
         match self {
-            QuestionBox::Math(q) => q.prompt(),
+            QuestionBox::Addition1_10(q) => q.prompt(),
+            QuestionBox::Addition100(q) => q.prompt(),
+            QuestionBox::Subtraction1_10(q) => q.prompt(),
+            QuestionBox::Multiplication1_10(q) => q.prompt(),
+            QuestionBox::Multiplication1_20(q) => q.prompt(),
+            QuestionBox::Division1_10(q) => q.prompt(),
             QuestionBox::Area(q) => q.prompt(),
             QuestionBox::FirstOrderEquationQuestion(q) => q.prompt(),
             QuestionBox::FirstDegreeDerivativeQuestion(q) => q.prompt(),
@@ -163,7 +181,12 @@ impl Question for QuestionBox {
 
     fn answer(&self) -> &str {
         match self {
-            QuestionBox::Math(q) => q.answer(),
+            QuestionBox::Addition1_10(q) => q.answer(),
+            QuestionBox::Addition100(q) => q.answer(),
+            QuestionBox::Subtraction1_10(q) => q.answer(),
+            QuestionBox::Multiplication1_10(q) => q.answer(),
+            QuestionBox::Multiplication1_20(q) => q.answer(),
+            QuestionBox::Division1_10(q) => q.answer(),
             QuestionBox::Area(q) => q.answer(),
             QuestionBox::FirstOrderEquationQuestion(q) => q.answer(),
             QuestionBox::FirstDegreeDerivativeQuestion(q) => q.answer(),
@@ -180,7 +203,12 @@ impl Question for QuestionBox {
 
     fn check_answer(&self, answer: &str) -> bool {
         match self {
-            QuestionBox::Math(q) => q.check_answer(answer),
+            QuestionBox::Addition1_10(q) => q.check_answer(answer),
+            QuestionBox::Addition100(q) => q.check_answer(answer),
+            QuestionBox::Subtraction1_10(q) => q.check_answer(answer),
+            QuestionBox::Multiplication1_10(q) => q.check_answer(answer),
+            QuestionBox::Multiplication1_20(q) => q.check_answer(answer),
+            QuestionBox::Division1_10(q) => q.check_answer(answer),
             QuestionBox::Area(q) => q.check_answer(answer),
             QuestionBox::FirstOrderEquationQuestion(q) => q.check_answer(answer),
             QuestionBox::FirstDegreeDerivativeQuestion(q) => q.check_answer(answer),
@@ -202,11 +230,20 @@ pub fn generate_questions(quiz_type: Quiz, count: usize) -> Vec<QuestionBox> {
 
     for _ in 0..count {
         let question = match quiz_type {
-            Quiz::Addition | Quiz::Subtraction | Quiz::Multiplication | Quiz::Division => {
-                QuestionBox::Math(MathQuestion::random(quiz_type))
+            Quiz::Addition1_10 => QuestionBox::Addition1_10(AdditionQuestion1_10::random()),
+            Quiz::Addition100 => QuestionBox::Addition100(AdditionQuestion100::random()),
+            Quiz::Subtraction1_10 => {
+                QuestionBox::Subtraction1_10(SubtractionQuestion1_10::random())
             }
+            Quiz::Multiplication1_10 => {
+                QuestionBox::Multiplication1_10(MultiplicationQuestion1_10::random())
+            }
+            Quiz::Multiplication1_20 => {
+                QuestionBox::Multiplication1_20(MultiplicationQuestion1_20::random())
+            }
+            Quiz::Division1_10 => QuestionBox::Division1_10(DivisionQuestion1_10::random()),
             Quiz::SquareArea => QuestionBox::Area(AreaQuestion::random()),
-            Quiz::NoCourse => QuestionBox::Math(MathQuestion::new(0, 0, Quiz::NoCourse)),
+            Quiz::NoCourse => QuestionBox::Addition1_10(AdditionQuestion1_10::random()),
             Quiz::FirstOrderEquation => {
                 QuestionBox::FirstOrderEquationQuestion(FirstOrderEquationQuestion::random())
             }

@@ -32,10 +32,12 @@ fn app() -> Html {
     dummy_user.school_id = DEV_UUID;
     let all_courses = Rc::new(vec![
         Quiz::NoCourse,
-        Quiz::Addition,
-        Quiz::Subtraction,
-        Quiz::Multiplication,
-        Quiz::Division,
+        Quiz::Addition1_10,
+        Quiz::Addition100,
+        Quiz::Subtraction1_10,
+        Quiz::Multiplication1_10,
+        Quiz::Multiplication1_20,
+        Quiz::Division1_10,
         Quiz::SquareArea,
         Quiz::FirstOrderEquation,
         Quiz::FirstDegreeDerivativeQuestion,
