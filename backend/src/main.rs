@@ -90,7 +90,7 @@ async fn get_leaderboard(
 ) -> impl Responder {
     let limit = req
         .limit
-        .unwrap_or((MAX_ENTRIES_PER_COURSE as i64).try_into().unwrap());
+        .unwrap_or(MAX_ENTRIES_PER_COURSE.try_into().unwrap());
 
     // Use the macro version for compile-time checks and direct struct mapping
     let result = sqlx::query_as!(
