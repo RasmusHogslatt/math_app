@@ -86,12 +86,10 @@ impl FirstDegreeDerivativeQuestion {
                 if *coef < 0 {
                     result.push('-');
                 }
+            } else if *coef < 0 {
+                result.push_str(" - ");
             } else {
-                if *coef < 0 {
-                    result.push_str(" - ");
-                } else {
-                    result.push_str(" + ");
-                }
+                result.push_str(" + ");
             }
 
             // Add coefficient (unless it's 1 or -1 and not a constant)

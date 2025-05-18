@@ -11,7 +11,7 @@ pub struct RoundingQuestion {
 impl RoundingQuestion {
     pub fn new(number: f32) -> Self {
         Self {
-            number: number,
+            number,
             answer: (number.round() as i32).to_string(),
         }
     }

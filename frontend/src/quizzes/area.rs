@@ -1,3 +1,4 @@
+use core::f64;
 use std::fmt;
 
 use rand::Rng;
@@ -72,10 +73,7 @@ impl AreaQuestion {
     }
 
     pub fn new_circle(radius: u32, unit: &str) -> Self {
-        // Circle area = π * r²
-        // For simplicity, we'll use 3.14159 as π and round to the nearest integer
-        let pi = 3.14159;
-        let area = (pi * (radius * radius) as f64).round() as u32;
+        let area = (f64::consts::PI * (radius * radius) as f64).round() as u32;
         Self {
             shape_type: ShapeType::Circle,
             dimensions: ShapeDimensions::Circle { radius },
