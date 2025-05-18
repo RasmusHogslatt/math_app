@@ -17,3 +17,10 @@ Perimeter of shapes
 Volume of shapes
 
 Divisibility with N? Is 123 divisible by 3? etc
+
+Connect to db:
+sudo -u postgres psql
+\l to check tables
+\c dbname to connect
+\dt to list tables in db
+TRUNCATE TABLE table_name; to delete all rows in table
