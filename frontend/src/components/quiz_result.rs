@@ -19,7 +19,7 @@ pub fn result(props: &ResultSectionProps) -> Html {
             props.time_taken.as_secs_f32()
         )
     } else {
-        format!("Fel! Försök igen.")
+        "Fel! Försök igen.".to_string()
     };
 
     let on_restart = {

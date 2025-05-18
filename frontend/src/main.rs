@@ -56,7 +56,7 @@ fn app() -> Html {
     let app_state = use_state(|| AppState::Selection);
     let questions = use_state(Vec::new);
     let current_question = use_state(|| 0);
-    let start_time = use_state(|| Instant::now());
+    let start_time = use_state(Instant::now);
     let elapsed_time = use_state(|| Duration::from_secs(0));
     let interval_ref = use_mut_ref(|| None::<Interval>);
     let failed_question_details = use_state(|| None::<(QuestionBox, String)>);
@@ -211,7 +211,7 @@ fn app() -> Html {
         let elapsed_time = elapsed_time.clone();
         let failed_question_details = failed_question_details.clone();
 
-        use_effect_with((*course).clone(), move |_current_course| {
+        use_effect_with(*course, move |_current_course| {
             if *app_state != AppState::Selection {
                 web_sys::console::log_1(
                     &"Course changed, resetting state and stopping timer.".into(),
@@ -244,7 +244,7 @@ fn app() -> Html {
             <div class="sidebar">
                 <QuizSelect
                     options={all_courses.clone()}
-                    selected={(*course).clone()}
+                    selected={*course}
                     on_change={on_course_change}
                 />
             </div>
@@ -300,7 +300,7 @@ fn app() -> Html {
                                     <ResultSection
                                     passed={passed}
                                     time_taken={time_taken}
-                                    course={(*course).clone()}
+                                    course={*course}
                                     on_restart={on_restart.clone()}
                                     failed_question_details={failure_data}
                                 />

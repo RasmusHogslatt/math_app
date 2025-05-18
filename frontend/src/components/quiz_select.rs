@@ -21,14 +21,14 @@ pub fn quiz_select(props: &QuizSelectionProps) -> Html {
     // State to track which subject sections are expanded (true = expanded, false = collapsed)
     // Initialize all sections as collapsed (false)
     let collapsed_states = use_state(|| {
-        let map = BTreeMap::new();
+        
         // Optional: Initialize based on existing difficulties, or leave empty
         // If left empty, sections will default to collapsed when first encountered.
         // Or, you can pre-populate if needed:
         // map.insert(Subject::YearOne, false);
         // map.insert(Subject::YearTwo, false);
         // map.insert(Subject::YearThree, false);
-        map
+        BTreeMap::new()
     });
 
     // Group courses by subject
@@ -41,8 +41,8 @@ pub fn quiz_select(props: &QuizSelectionProps) -> Html {
             }
             grouped
                 .entry(course.subject())
-                .or_insert_with(Vec::new)
-                .push(course.clone());
+                .or_default()
+                .push(*course);
         }
         grouped
     });
@@ -106,12 +106,12 @@ pub fn quiz_select(props: &QuizSelectionProps) -> Html {
                                     <ul class="quiz-list">
                                         {
                                             quiz.iter().map(|course| {
-                                                let course_value = course.clone();
+                                                let course_value = *course;
                                                 let on_click = {
                                                     let on_change = props.on_change.clone();
-                                                    let course = course_value.clone();
+                                                    let course = course_value;
                                                     Callback::from(move |_| {
-                                                        on_change.emit(course.clone());
+                                                        on_change.emit(course);
                                                     })
                                                 };
 

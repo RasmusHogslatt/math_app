@@ -17,7 +17,7 @@ impl FractionToDegree {
         Self {
             nominator,
             denominator,
-            answer: format_to_one_decimal(answer as f32),
+            answer: format_to_one_decimal(answer),
         }
     }
 

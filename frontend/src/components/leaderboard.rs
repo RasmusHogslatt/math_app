@@ -51,7 +51,7 @@ pub fn leaderboard(props: &LeaderboardProps) -> Html {
                 fetch_state.set(FetchState::Loading);
                 // *** Get school/school_id from the user prop ***
                 let school = user.school.clone();
-                let school_id = user.school_id.clone();
+                let school_id = user.school_id;
 
                 spawn_local(async move {
                     // *** Call fetch_leaderboard with all 3 arguments ***
@@ -101,7 +101,7 @@ pub fn leaderboard(props: &LeaderboardProps) -> Html {
                 let fetch_state = fetch_state.clone();
                 let course = course.clone();
                 let school = user.school.clone(); // Get user details for refresh
-                let school_id = user.school_id.clone();
+                let school_id = user.school_id;
                 fetch_state.set(FetchState::Loading);
                 spawn_local(async move {
                     // Refresh using the updated fetch_leaderboard call
@@ -162,7 +162,7 @@ pub fn leaderboard(props: &LeaderboardProps) -> Html {
                 name: name.to_string(), // Use the validated/derived name
                 course: course.clone(),
                 school: user.school.clone(), // Use school from user prop
-                school_id: user.school_id.clone(), // Use school_id from user prop
+                school_id: user.school_id, // Use school_id from user prop
                 time_seconds: time,
             };
 

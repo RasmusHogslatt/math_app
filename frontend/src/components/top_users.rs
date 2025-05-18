@@ -103,7 +103,7 @@ pub fn top_users(props: &TopUsersProps) -> Html {
                 },
                 FetchTopUsersState::Success(users) => {
                     // Get top 3 users for display, even if props.limit fetched more
-                    let first = users.get(0);
+                    let first = users.first();
                     let second = users.get(1);
                     let third = users.get(2);
 

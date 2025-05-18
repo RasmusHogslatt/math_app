@@ -56,7 +56,7 @@ async fn handle_submit_response(response: gloo_net::http::Response) -> Result<()
                 .unwrap_or_else(|_| "Score already submitted.".to_string());
             Err(ApiError::Conflict(message))
         }
-        _ if status >= 200 && status < 300 => Ok(()), // Other success codes just in case
+        _ if (200..300).contains(&status) => Ok(()), // Other success codes just in case
         _ => {
             let message = response
                 .text()

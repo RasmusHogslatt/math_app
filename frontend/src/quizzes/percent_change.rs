@@ -22,7 +22,7 @@ impl PercentChangeQuestion {
     pub fn new(current_price: i32, percent_change: i32) -> Self {
         let change: f32 = current_price as f32 * percent_change as f32 / 100.0;
         let new_price: f32 = current_price as f32 + change;
-        let answer = format_to_one_decimal(new_price as f32);
+        let answer = format_to_one_decimal(new_price);
 
         Self {
             current_price,

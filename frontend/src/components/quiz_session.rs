@@ -18,7 +18,7 @@ pub struct QuizSectionProps {
 #[function_component(QuizSession)]
 pub fn quiz_session(props: &QuizSectionProps) -> Html {
     let input_ref = use_node_ref();
-    let answer = use_state(|| String::new());
+    let answer = use_state(String::new);
 
     let on_submit = {
         let input_ref = input_ref.clone();

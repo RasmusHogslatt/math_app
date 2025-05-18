@@ -81,7 +81,7 @@ impl Question for FractionComparisonQuestion {
 
     // Override display to customize the output
     fn display(&self) -> String {
-        format!("Vilket bråk är störst?",)
+        "Vilket bråk är störst?".to_string()
     }
 }
 

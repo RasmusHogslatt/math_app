@@ -151,7 +151,7 @@ impl Question for NumberComparisonQuestion {
 
     // Override display to customize the output
     fn display(&self) -> String {
-        format!("Vilket värde är störst?",)
+        "Vilket värde är störst?".to_string()
     }
 }
 
