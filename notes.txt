@@ -24,3 +24,5 @@ sudo -u postgres psql
 \c dbname to connect
 \dt to list tables in db
 TRUNCATE TABLE table_name; to delete all rows in table
+
+cd to backend, and run "cargo sqlx prepare" to fix github actions
