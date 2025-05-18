@@ -12,3 +12,5 @@ pub mod fraction_comparison_component;
 pub use fraction_comparison_component::*;
 pub mod choice_button_quiz;
 pub use choice_button_quiz::*;
+pub mod top_users;
+pub use top_users::*;

@@ -2,9 +2,14 @@
 use actix_cors::Cors;
 use actix_web::{App, HttpResponse, HttpServer, Responder, web};
 use common::{
-    LeaderboardEntry, LeaderboardRequest, SubmitScoreRequest, config::MAX_ENTRIES_PER_COURSE,
+    LeaderboardEntry, LeaderboardRequest, SubmitScoreRequest, TopUserSchoolEntry,
+    config::MAX_ENTRIES_PER_COURSE,
 };
-use sqlx::{PgPool, postgres::PgPoolOptions, types::chrono::Utc};
+use sqlx::{
+    PgPool,
+    postgres::PgPoolOptions,
+    types::{Uuid, chrono::Utc},
+};
 use std::env;
 
 // Database connection setup
@@ -302,16 +307,57 @@ async fn submit_score(
     }
 }
 
+#[derive(serde::Deserialize, Debug, Default)] // Query parameters for fetching top users
+pub struct GetTopUsersBySchoolQuery {
+    pub school: String,
+    pub school_id: Uuid,
+    pub limit: Option<u32>, // Number of top users to return
+}
+
+async fn get_top_users_by_school(
+    db_pool: web::Data<PgPool>,
+    req: web::Query<GetTopUsersBySchoolQuery>,
+) -> impl Responder {
+    // Default limit to 3, max reasonable limit (e.g., 20) to prevent abuse
+    let limit = req.limit.unwrap_or(3).min(20) as i64;
+
+    let result = sqlx::query_as!(
+        TopUserSchoolEntry, // Use the common struct for the response
+        r#"
+        SELECT
+            t.name,
+            t.school,
+            COUNT(DISTINCT t.course) AS "leaderboard_count!" -- Added "!" to assert non-null
+        FROM leaderboard AS t
+        WHERE t.school = $1 AND t.school_id = $2 -- Filter by the specific school
+        GROUP BY t.name, t.school, t.school_id   -- Group by user identifiers
+        ORDER BY COUNT(DISTINCT t.course) DESC, MIN(t.completed_at) ASC -- Rank by count, then by earliest submission. Used expression directly.
+        LIMIT $3
+        "#,
+        &req.school,
+        req.school_id,
+        limit
+    )
+    .fetch_all(db_pool.get_ref())
+    .await;
+
+    match result {
+        Ok(users) => HttpResponse::Ok().json(users),
+        Err(e) => {
+            eprintln!("Database error fetching top users by school: {}", e);
+            HttpResponse::InternalServerError().json("Failed to fetch top users by school")
+        }
+    }
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    // Initialize the database
     let db_pool = setup_database().await;
-    let db_pool = web::Data::new(db_pool);
+    let db_pool_data = web::Data::new(db_pool);
 
     println!("Starting server at http://127.0.0.1:8080");
 
     HttpServer::new(move || {
-        // Configure CORS to allow frontend requests
         let cors = Cors::default()
             .allow_any_origin()
             .allow_any_method()
@@ -319,12 +365,15 @@ async fn main() -> std::io::Result<()> {
 
         App::new()
             .wrap(cors)
-            .app_data(db_pool.clone())
-            // API endpoints
+            .app_data(db_pool_data.clone())
             .service(
                 web::scope("/api")
                     .route("/leaderboard", web::get().to(get_leaderboard))
-                    .route("/submit", web::post().to(submit_score)),
+                    .route("/submit", web::post().to(submit_score))
+                    .route(
+                        "/top_users_by_school",
+                        web::get().to(get_top_users_by_school),
+                    ),
             )
     })
     .bind("0.0.0.0:8080")?

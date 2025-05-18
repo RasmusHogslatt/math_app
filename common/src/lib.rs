@@ -46,3 +46,10 @@ impl User {
         }
     }
 }
+#[cfg_attr(feature = "backend", derive(sqlx::FromRow))]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+pub struct TopUserSchoolEntry {
+    pub name: String,
+    pub school: String,
+    pub leaderboard_count: i64,
+}

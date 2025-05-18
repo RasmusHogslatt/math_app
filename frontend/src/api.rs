@@ -1,4 +1,4 @@
-use common::{LeaderboardEntry, SubmitScoreRequest, config::API_BASE_URL};
+use common::{LeaderboardEntry, SubmitScoreRequest, TopUserSchoolEntry, config::API_BASE_URL};
 use gloo_net::http::Request;
 use serde::de::DeserializeOwned;
 use thiserror::Error;
@@ -115,4 +115,30 @@ pub async fn submit_score(req: &SubmitScoreRequest) -> Result<(), ApiError> {
         .await?;
 
     handle_submit_response(response).await
+}
+pub async fn fetch_top_users_by_school(
+    school_name: &str,
+    school_id_uuid: &Uuid,
+    limit_count: u32, // This is the limit passed to the API
+) -> Result<Vec<TopUserSchoolEntry>, ApiError> {
+    // Expect TopUserSchoolEntry
+    let encoded_school_name = encode_uri_component(school_name);
+    let school_id_str = school_id_uuid.to_string();
+
+    let url = if API_BASE_URL.is_empty() {
+        format!(
+            "/api/top_users_by_school?school={}&school_id={}&limit={}", // Pass limit
+            encoded_school_name, school_id_str, limit_count
+        )
+    } else {
+        format!(
+            "{}/api/top_users_by_school?school={}&school_id={}&limit={}", // Pass limit
+            API_BASE_URL, encoded_school_name, school_id_str, limit_count
+        )
+    };
+
+    web_sys::console::log_1(&format!("Fetching top users by school from URL: {}", url).into());
+
+    let response = Request::get(&url).send().await?;
+    handle_response(response).await
 }

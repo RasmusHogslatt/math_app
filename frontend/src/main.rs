@@ -8,6 +8,7 @@ use components::Leaderboard;
 use components::QuizSelect;
 use components::QuizSession;
 use components::ResultSection;
+use components::TopUsers;
 use gloo_timers::callback::Interval;
 use quiz::*;
 use std::rc::Rc;
@@ -250,6 +251,11 @@ fn app() -> Html {
             <div class="main-content">
                 <div class="title-section">
                     <h1>{"Mer Matte"}</h1>
+                     <TopUsers
+                        limit={3}
+                        school_name={dummy_user.school.clone()}
+                        school_id={dummy_user.school_id}
+                    />
                 </div>
                 <div class="dynamic-content-wrapper">
                     {
