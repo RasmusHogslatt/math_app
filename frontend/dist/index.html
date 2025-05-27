@@ -4,20 +4,18 @@
 <head>
     <meta charset="utf-8" />
     <title>Mer Matte</title>
-    <link rel="stylesheet" href="/index-3508fa19d3dcc882.css" integrity="sha384&#x2D;r3cEEjeNBbt56gB2pQgwSgb9wXndAKV&#x2B;FqlWTKjIGRfa5&#x2B;BgvWsXp0X&#x2F;E0oyYbxn"/>
+    <link rel="stylesheet" href="/index-3508fa19d3dcc882.css" integrity="sha384-r3cEEjeNBbt56gB2pQgwSgb9wXndAKV+FqlWTKjIGRfa5+BgvWsXp0X/E0oyYbxn"/>
     
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16x16.png">
     <link rel="manifest" href="assets/site.webmanifest">
-
-<link rel="modulepreload" href="/frontend-c3edd3454131d1d2.js" crossorigin=anonymous integrity="sha384-Tv2nGhCWiYqRrg4Qy17q+U3nN5Oa1gfPAOlcijK4k9Qrlaz/xBlvlrfMxmj1p4Xy">
-<link rel="preload" href="/frontend-c3edd3454131d1d2_bg.wasm" crossorigin=anonymous integrity="sha384-IDif0F76o0XLXezYpRlm6vlGz5O+R043RNkt6TxyrissBjbJrEVmyeu5h85lAJ7s" as="fetch" type="application/wasm"></head>
+<link rel="modulepreload" href="/frontend-b426b88062c3e7a9.js" crossorigin="anonymous" integrity="sha384-KmiFrLuuuEur/7PuxggLN8IwvmENOaG65Q36LDlV5rY1eCy4ldEcV0YcfTp7jYKr"><link rel="preload" href="/frontend-b426b88062c3e7a9_bg.wasm" crossorigin="anonymous" integrity="sha384-MFpH7akiU/s7oym28nCc4t+2YwRdWY1Iq/HEy1w4YJ/Ey0AVWg6PL5668sCoetxW" as="fetch" type="application/wasm"></head>
 
 <body>
-<script type="module" nonce="66ci6AzuJptQrWdT4iFiCg==">
-import init, * as bindings from '/frontend-c3edd3454131d1d2.js';
-const wasm = await init('/frontend-c3edd3454131d1d2_bg.wasm');
+<script type="module">
+import init, * as bindings from '/frontend-b426b88062c3e7a9.js';
+const wasm = await init({ module_or_path: '/frontend-b426b88062c3e7a9_bg.wasm' });
 
 
 window.wasmBindings = bindings;
@@ -117,7 +115,7 @@ dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
                         break;
                 }
             };
-            ws.onclose = this.onclose;
+            ws.onclose = () => this.onclose();
         }
 
         onclose() {
@@ -129,7 +127,7 @@ dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
                     // rebuilt on restart)
                     const ws = new WebSocket(this.url);
                     ws.onopen = () => window.location.reload();
-                    ws.onclose = this.onclose;
+                    ws.onclose = () => this.onclose();
                 },
                 this.poll_interval);
         }
