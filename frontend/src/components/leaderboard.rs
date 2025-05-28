@@ -1,6 +1,6 @@
 // frontend/src/components/leaderboard.rs
 use crate::api::{self, ApiError}; // Import the api module and error type
-use common::{LeaderboardEntry, SubmitScoreRequest, User};
+use common::{config::MAX_ENTRIES_PER_COURSE, LeaderboardEntry, SubmitScoreRequest, User};
 use wasm_bindgen_futures::spawn_local;
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
@@ -116,8 +116,8 @@ pub fn leaderboard(props: &LeaderboardProps) -> Html {
     };
 
     let handle_submit = {
-        let player_name = player_name.clone();
-        let submit_state = submit_state.clone();
+        let player_name_state = player_name.clone();
+        let submit_state_handle = submit_state.clone();
         let course = props.course.clone();
         let user_time = props.user_time;
         let refresh_leaderboard = refresh_leaderboard.clone();
@@ -127,46 +127,42 @@ pub fn leaderboard(props: &LeaderboardProps) -> Html {
         Callback::from(move |e: SubmitEvent| {
             e.prevent_default();
 
-            if !matches!(*submit_state, SubmitState::Idle) {
-                // Consider allowing retry from Error state?
-                // if !matches!(*submit_state, SubmitState::Idle | SubmitState::Error(_)) { return; }
+            if !matches!(*submit_state_handle, SubmitState::Idle) {
                 return;
             }
 
-            let name_to_submit = (*player_name).trim();
+            let name_to_submit = (*player_name_state).trim();
             let name = if name_to_submit.is_empty() {
-                // Use name from User prop if input is empty? Or force input?
-                // user.name.clone()
-                "Anonym" // Or keep forcing input like before
+                "Anonym"
             } else {
                 name_to_submit
             };
 
             if name_to_submit.is_empty() {
                 // Keep validation if input required
-                submit_state.set(SubmitState::Error("Ange ett namn".into()));
+                submit_state_handle.set(SubmitState::Error("Ange ett namn".into()));
                 return;
             }
 
             let time = match user_time {
                 Some(t) => t,
                 None => {
-                    submit_state.set(SubmitState::Error("Ingen tid finns".into()));
+                    submit_state_handle.set(SubmitState::Error("Ingen tid finns".into()));
                     return;
                 }
             };
 
-            submit_state.set(SubmitState::Submitting);
+            submit_state_handle.set(SubmitState::Submitting);
 
             let req = SubmitScoreRequest {
                 name: name.to_string(), // Use the validated/derived name
                 course: course.clone(),
                 school: user.school.clone(), // Use school from user prop
-                school_id: user.school_id, // Use school_id from user prop
+                school_id: user.school_id,   // Use school_id from user prop
                 time_seconds: time,
             };
 
-            let submit_state = submit_state.clone();
+            let submit_state = submit_state_handle.clone();
             let refresh_leaderboard = refresh_leaderboard.clone();
 
             spawn_local(async move {
@@ -193,9 +189,56 @@ pub fn leaderboard(props: &LeaderboardProps) -> Html {
         })
     };
 
+    let qualification_status: Result<(), String> = if props.allow_submission
+        && props.user_time.is_some()
+    {
+        match &*fetch_state {
+            FetchState::Success(entries) => {
+                let user_time_val = props.user_time.unwrap_or(0.0);
+                if entries.len() < MAX_ENTRIES_PER_COURSE as usize {
+                    Ok(())
+                } else {
+                    // Leaderboard is full, check time
+                    if let Some(last_entry) = entries.last() {
+                        // last_entry is the one with the highest time
+                        if user_time_val < last_entry.time_seconds {
+                            Ok(()) // Qualified: user's time is better
+                        } else {
+                            Err(format!(
+                                    "Topplistan har bara {} platser. Du behöver slå tiden {:.2}s för att kunna skicka in din tid. Fortsätt träna så kommer du platsa på nolltid.",
+                                    MAX_ENTRIES_PER_COURSE, last_entry.time_seconds
+                                ))
+                        }
+                    } else {
+                        // This case (full but empty) should ideally not happen if MAX_ENTRIES_PER_COURSE > 0.
+                        // If MAX_ENTRIES_PER_COURSE is 0, it means no entries allowed.
+                        if MAX_ENTRIES_PER_COURSE == 0 {
+                            Err(
+                                "Topplistan är konfigurerad att inte ta emot några resultat."
+                                    .to_string(),
+                            )
+                        } else {
+                            Ok(()) // Or treat as an error / unexpected state. Defaulting to Ok for safety.
+                        }
+                    }
+                }
+            }
+            FetchState::Loading | FetchState::Idle => {
+                Err("Laddar topplistan för att avgöra om du kvalificerar dig...".to_string())
+            }
+            FetchState::Error(_) => Err(
+                "Kunde inte ladda topplistan för att avgöra kvalificering. Försök igen senare."
+                    .to_string(),
+            ),
+        }
+    } else {
+        Err("Du kan inte skicka in en tid just nu.".into())
+    };
+
     // Determine if the submit form should be visible
     let show_submit_form = props.allow_submission
         && props.user_time.is_some()
+        && qualification_status.is_ok()
         && !matches!(
             *submit_state,
             SubmitState::Success(_) | SubmitState::AlreadySubmitted
@@ -229,12 +272,26 @@ pub fn leaderboard(props: &LeaderboardProps) -> Html {
                         }
                     }
                 </div>
-            } else if let SubmitState::Success(msg) = &*submit_state {
-                // Show success message if form is hidden after success
-                <p class="status-message success">{msg}</p>
-            } else if let SubmitState::AlreadySubmitted = *submit_state {
-                // Show already submitted message
-                <p class="status-message success">{"Du har redan skickat in din tid."}</p>
+           } else {
+                // Display messages if form is hidden
+                if let SubmitState::Success(msg) = &*submit_state {
+                   <p class="status-message success">{msg}</p>
+                } else if let SubmitState::AlreadySubmitted = *submit_state {
+                    <p class="status-message success">{"Du har redan skickat in din tid för denna quiz."}</p>
+                } else if props.allow_submission && props.user_time.is_some() {
+                    // Only show qualification-related messages if user could potentially submit
+                    {
+                        match qualification_status {
+                            Err(reason) if !reason.is_empty() => {
+                                // Show reason if not qualified and reason string is not empty
+                                html! { <p class="status-message info">{reason}</p> }
+                            }
+                            _ => html! {}
+                        }
+                    }
+                }
+                // If !props.allow_submission or props.user_time is None, no specific message
+                // is shown here about submission eligibility, as it's implied they can't submit.
             }
 
             // Leaderboard table
