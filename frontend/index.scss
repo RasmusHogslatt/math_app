@@ -799,11 +799,10 @@ textarea {
 // --- Component: Top Users Podium ---
 .top-users-podium-container {
     width: 100%;
-    max-width: 300px; // Adjust to control overall width of the podium section
-    margin: 5px auto 10px auto; // top/bottom margin, auto left/right for centering
-    // padding: 5px 0; // Optional padding if you add a border/background to container
+    // max-width: 300px; // Original
+    max-width: 330px; // Slightly wider to accommodate wider steps
+    margin: 5px auto 10px auto;
 
-    // Optional title style if you use <h4 class="podium-title">
     .podium-title {
         font-size: 0.85rem;
         color: $text-color-light;
@@ -814,11 +813,10 @@ textarea {
     }
 
     .podium-status {
-        // For loading, error, or empty messages
         font-size: 0.8rem;
         color: $text-color-light;
         text-align: center;
-        padding: 15px 0; // Give it some space if it's the only thing showing
+        padding: 15px 0;
         font-style: italic;
 
         &.error {
@@ -830,125 +828,141 @@ textarea {
 
 .podium {
     display: flex;
-    justify-content: center; // Center the steps horizontally
-    align-items: flex-end; // Align steps to the bottom for the podium "step-up" effect
-    gap: 4px; // Small gap between podium steps
-    min-height: 70px; // Minimum height to prevent collapse when empty/loading
-    position: relative; // For potential future absolute positioned elements (e.g., confetti)
+    justify-content: center;
+    align-items: flex-end;
+    gap: 5px; // Slightly increased gap between steps
+    // min-height: 70px; // Original
+    min-height: 80px; // Increased min-height for the whole podium area
+    position: relative;
 }
 
 .podium-step {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-end; // Content towards the bottom of the step
-    padding: 6px;
-    border-radius: $border-radius-small $border-radius-small 0 0; // Rounded top corners
+    justify-content: flex-end;
+    // padding: 6px; // Original
+    padding: 8px 6px; // More vertical padding, same horizontal
+    border-radius: $border-radius-small $border-radius-small 0 0;
     text-align: center;
     color: white;
-    width: 80px; // Control width of each step, adjust as needed
+    // width: 80px; // Original
+    width: 90px; // Wider steps
     box-shadow: 0 1px 3px hsla(0, 0%, 0%, 0.15);
     transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
-    position: relative; // For the rank number absolutely positioned
+    position: relative;
 
     &.empty {
-        background-color: $border-color-light; // A neutral placeholder
+        background-color: $border-color-light;
 
-        // Ensure empty steps still contribute to min-height of .podium
+        // min-height adjustments for empty steps to match new sizes
         &:first-child {
-            min-height: 45px;
+            // This refers to the visual order, so second place
+            min-height: 55px;
         }
 
-        // 2nd/3rd
         &:nth-child(2) {
-            min-height: 60px;
+            // This refers to the visual order, so first place
+            min-height: 70px;
         }
 
-        // 1st
         &:last-child {
-            min-height: 40px;
+            // This refers to the visual order, so third place
+            min-height: 50px;
         }
-
-        // 2nd/3rd
     }
 
     .podium-rank {
-        font-size: 1.8em; // Prominent rank number
+        font-size: 1.8em;
         font-weight: 700;
         line-height: 1;
-        // Optional: Style as a circle or badge
-        // background-color: rgba(0,0,0,0.1);
-        // border-radius: 50%;
-        // width: 28px;
-        // height: 28px;
-        // display: flex;
-        // align-items: center;
-        // justify-content: center;
-        // margin-bottom: 2px;
+        margin-bottom: 2px; // Added a small margin below rank
     }
 
     .podium-name {
-        font-size: 0.75rem; // Smaller name
+        font-size: 0.75rem;
         font-weight: 600;
         margin-top: 2px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        width: 100%; // Crucial for ellipsis
-        padding: 0 2px; // Prevent text touching edges
+        width: 100%;
+        padding: 0 2px;
     }
 
     .podium-count {
-        font-size: 0.65rem; // Very small count
+        font-size: 0.65rem;
         opacity: 0.85;
-        margin-top: 1px;
+        margin-top: 2px; // Slightly increased margin
     }
 
     // Specific heights and colors for the podium visual hierarchy
-    // Using order to place 1st in the middle if desired.
     &.first-place {
-        background-color: hsl(42, 85%, 60%); // Gold
-        min-height: 60px;
-        order: 2; // Center
-        transform: translateY(-6px); // Elevate the 1st place
-        z-index: 1; // Ensure it's above others if overlapping due to transform
-        // width: 85px; // Slightly wider if desired
+        background-color: hsl(42, 85%, 60%);
+        // min-height: 60px; // Original
+        min-height: 70px; // Increased height for 1st
+        order: 2;
+        transform: translateY(-8px); // Slightly more elevation
+        z-index: 1;
+        // width: 95px; // Can make 1st place slightly wider too if desired
     }
 
     &.second-place {
-        background-color: hsl(210, 20%, 75%); // Silver
-        min-height: 45px;
-        order: 1; // Left
+        background-color: hsl(210, 20%, 75%);
+        // min-height: 45px; // Original
+        min-height: 55px; // Increased height for 2nd
+        order: 1;
     }
 
     &.third-place {
-        background-color: hsl(30, 60%, 65%); // Bronze
-        min-height: 40px;
-        order: 3; // Right
+        background-color: hsl(30, 60%, 65%);
+        // min-height: 40px; // Original
+        min-height: 50px; // Increased height for 3rd
+        order: 3;
     }
 
     &:hover {
-        transform: translateY(-3px) scale(1.03);
+        transform: translateY(-4px) scale(1.5); // Adjusted hover transform
         box-shadow: 0 3px 8px hsla(0, 0%, 0%, 0.2);
 
         &.first-place {
-            transform: translateY(-9px) scale(1.03); // Keep elevation + hover effect
+            transform: translateY(-11px) scale(1.5); // Keep elevation + hover effect
         }
     }
 }
 
-// Adjustments to the .title-section to make space for the podium
 .title-section {
     text-align: center;
     width: 100%;
-    padding-bottom: 10px; // Reduced from 30px to make top area more compact
+    padding-bottom: 10px;
 
     h1 {
-        font-size: 2.5rem; // Keep as is or slightly reduce if needed
+        font-size: 2.5rem;
         color: $primary-color-dark;
         margin-top: 0;
-        margin-bottom: 0; // Reduce space between H1 and podium
+        margin-bottom: 0;
     }
+}
 
-    // h2 (subtitle) is not used in the provided main.rs snippet for title-section
+.podium-medals {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    margin-top: 5px;
+    font-size: 0.85rem;
+    flex-wrap: nowrap;
+    line-height: 1;
+    padding: 3px 0; // ADDED: Vertical padding to give room for scaling
+
+    .medal {
+        display: inline-flex;
+        align-items: center;
+        text-shadow: 0px 1px 2px hsla(0, 0%, 0%, 0.2);
+        transition: transform 0.15s ease-out;
+
+        &:hover {
+            transform: scale(1.5);
+        }
+    }
 }

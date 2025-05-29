@@ -257,6 +257,7 @@ fn app() -> Html {
                         school_name={dummy_user.school.clone()}
                         school_id={dummy_user.school_id}
                     />
+
                 </div>
                 <div class="dynamic-content-wrapper">
                     {

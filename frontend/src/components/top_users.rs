@@ -81,6 +81,14 @@ pub fn top_users(props: &TopUsersProps) -> Html {
                     <div class="podium-rank">{rank.to_string()}</div>
                     <div class="podium-name" title={format!("{} från {}", user.name, user.school)}>{&user.name}</div>
                     <div class="podium-count">{format!("{} listor", user.leaderboard_count)}</div>
+                    // --- START: Added Medal Display ---
+                    <div class="podium-medals">
+                        { if user.gold_medals > 0 { html!{ <span class="medal gold" title={format!("{} Guld", user.gold_medals)}>{"🥇"}{ user.gold_medals }</span> } } else { html!{} } }
+                        { if user.silver_medals > 0 { html!{ <span class="medal silver" title={format!("{} Silver", user.silver_medals)}>{"🥈"}{ user.silver_medals }</span> } } else { html!{} } }
+                        { if user.bronze_medals > 0 { html!{ <span class="medal bronze" title={format!("{} Brons", user.bronze_medals)}>{"🥉"}{ user.bronze_medals }</span> } } else { html!{} } }
+                        { if user.generic_medals > 0 { html!{ <span class="medal generic" title={format!("{} Övriga", user.generic_medals)}>{"🏅"}{ user.generic_medals }</span> } } else { html!{} } }
+                    </div>
+                    // --- END: Added Medal Display ---
                 </div>
             },
             None => {

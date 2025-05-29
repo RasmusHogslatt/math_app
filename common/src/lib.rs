@@ -52,4 +52,8 @@ pub struct TopUserSchoolEntry {
     pub name: String,
     pub school: String,
     pub leaderboard_count: i64,
+    pub gold_medals: i64,
+    pub silver_medals: i64,
+    pub bronze_medals: i64,
+    pub generic_medals: i64,
 }

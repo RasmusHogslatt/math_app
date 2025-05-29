@@ -321,25 +321,39 @@ async fn get_top_users_by_school(
     // Default limit to 3, max reasonable limit (e.g., 20) to prevent abuse
     let limit = req.limit.unwrap_or(3).min(20) as i64;
 
-    let result = sqlx::query_as!(
-        TopUserSchoolEntry, // Use the common struct for the response
-        r#"
+    let query_str = r#"
+    WITH UserCourseRanks AS (
         SELECT
-            t.name,
-            t.school,
-            COUNT(DISTINCT t.course) AS "leaderboard_count!" -- Added "!" to assert non-null
-        FROM leaderboard AS t
-        WHERE t.school = $1 AND t.school_id = $2 -- Filter by the specific school
-        GROUP BY t.name, t.school, t.school_id   -- Group by user identifiers
-        ORDER BY COUNT(DISTINCT t.course) DESC, MIN(t.completed_at) ASC -- Rank by count, then by earliest submission. Used expression directly.
-        LIMIT $3
-        "#,
-        &req.school,
-        req.school_id,
-        limit
+            l.name,
+            l.school,
+            l.school_id,
+            l.course,
+            l.completed_at,
+            l.time_seconds,
+            ROW_NUMBER() OVER (PARTITION BY l.course ORDER BY l.time_seconds ASC, l.completed_at ASC) as rank_in_course
+        FROM leaderboard l
     )
-    .fetch_all(db_pool.get_ref())
-    .await;
+    SELECT
+        ucr.name,
+        ucr.school,
+        COUNT(DISTINCT ucr.course) AS leaderboard_count,
+        COALESCE(SUM(CASE WHEN ucr.rank_in_course = 1 THEN 1 ELSE 0 END), 0) AS gold_medals,
+        COALESCE(SUM(CASE WHEN ucr.rank_in_course = 2 THEN 1 ELSE 0 END), 0) AS silver_medals,
+        COALESCE(SUM(CASE WHEN ucr.rank_in_course = 3 THEN 1 ELSE 0 END), 0) AS bronze_medals,
+        COALESCE(SUM(CASE WHEN ucr.rank_in_course > 3 THEN 1 ELSE 0 END), 0) AS generic_medals
+    FROM UserCourseRanks ucr
+    WHERE ucr.school_id = $1 AND ucr.school = $2
+    GROUP BY ucr.name, ucr.school
+    ORDER BY leaderboard_count DESC, MIN(ucr.completed_at) ASC
+    LIMIT $3;
+"#;
+
+    let result = sqlx::query_as::<_, TopUserSchoolEntry>(query_str)
+        .bind(&req.school_id) // $1: school_id (Uuid of the school)
+        .bind(&req.school) // $2: school_name (String, name of the school)
+        .bind(limit) // $3: limit (i64, number of top users to return)
+        .fetch_all(db_pool.get_ref())
+        .await;
 
     match result {
         Ok(users) => HttpResponse::Ok().json(users),
