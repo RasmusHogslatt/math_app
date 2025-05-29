@@ -100,7 +100,7 @@ pub fn top_users(props: &TopUsersProps) -> Html {
 
     html! {
     <div class="top-users-podium-container">
-        <h4 class="podium-title">{format!("På flest topplistor")}</h4>
+        <h4 class="podium-title">{format!("På flest olika topplistor")}</h4>
         {
             match &*fetch_state {
                 FetchTopUsersState::Idle | FetchTopUsersState::Loading => html!{
