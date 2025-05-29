@@ -43,6 +43,7 @@ pub enum Quiz {
     FractionToDegree,
     PercentChange,
     Expression,
+    NegativeValues,
 }
 
 impl Display for Quiz {
@@ -70,6 +71,7 @@ impl Display for Quiz {
             Quiz::FractionToDegree => write!(f, "Bråk till grader"),
             Quiz::PercentChange => write!(f, "Procentuell förändring"),
             Quiz::Expression => write!(f, "Matematiska uttryck"),
+            Quiz::NegativeValues => write!(f, "Negativa tal"),
         }
     }
 }
@@ -95,6 +97,7 @@ impl Quiz {
             Quiz::FractionToDegree => Subject::Geometry,
             Quiz::PercentChange => Subject::Statisitics,
             Quiz::Expression => Subject::Algebra,
+            Quiz::NegativeValues => Subject::Number,
         }
     }
 
@@ -118,6 +121,7 @@ impl Quiz {
             Quiz::FractionToDegree => 10,
             Quiz::PercentChange => 10,
             Quiz::Expression => 10,
+            Quiz::NegativeValues => 10,
         }
     }
 }
@@ -154,6 +158,7 @@ pub enum QuestionBox {
     SixFractionToDegree(FractionToDegree),
     SevenPercentChange(PercentChangeQuestion),
     EightExpression(ExpressionQuestion),
+    NegativeValues(NegativeValuesQuestion),
 }
 
 impl Question for QuestionBox {
@@ -176,6 +181,7 @@ impl Question for QuestionBox {
             QuestionBox::SixFractionToDegree(q) => q.prompt(),
             QuestionBox::SevenPercentChange(q) => q.prompt(),
             QuestionBox::EightExpression(q) => q.prompt(),
+            QuestionBox::NegativeValues(q) => q.prompt(),
         }
     }
 
@@ -198,6 +204,7 @@ impl Question for QuestionBox {
             QuestionBox::SixFractionToDegree(q) => q.answer(),
             QuestionBox::SevenPercentChange(q) => q.answer(),
             QuestionBox::EightExpression(q) => q.answer(),
+            QuestionBox::NegativeValues(q) => q.answer(),
         }
     }
 
@@ -220,6 +227,7 @@ impl Question for QuestionBox {
             QuestionBox::SixFractionToDegree(q) => q.check_answer(answer),
             QuestionBox::SevenPercentChange(q) => q.check_answer(answer),
             QuestionBox::EightExpression(q) => q.check_answer(answer),
+            QuestionBox::NegativeValues(q) => q.check_answer(answer),
         }
     }
 }
@@ -262,6 +270,7 @@ pub fn generate_questions(quiz_type: Quiz, count: usize) -> Vec<QuestionBox> {
             Quiz::FractionToDegree => QuestionBox::SixFractionToDegree(FractionToDegree::random()),
             Quiz::PercentChange => QuestionBox::SevenPercentChange(PercentChangeQuestion::random()),
             Quiz::Expression => QuestionBox::EightExpression(ExpressionQuestion::random()),
+            Quiz::NegativeValues => QuestionBox::NegativeValues(NegativeValuesQuestion::random()),
         };
 
         questions.push(question);

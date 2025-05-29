@@ -50,6 +50,7 @@ fn app() -> Html {
         Quiz::FractionToDegree,
         Quiz::PercentChange,
         Quiz::Expression,
+        Quiz::NegativeValues,
     ]);
 
     let course = use_state(|| Quiz::NoCourse);

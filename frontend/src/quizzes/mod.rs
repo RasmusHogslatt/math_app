@@ -32,3 +32,5 @@ pub mod subtraction_1_10;
 pub use subtraction_1_10::*;
 pub mod division_1_10;
 pub use division_1_10::*;
+pub mod negative_values;
+pub use negative_values::*;
