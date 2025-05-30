@@ -85,7 +85,7 @@ pub fn quiz_session(props: &QuizSectionProps) -> Html {
                                     <AnalogClock question={question.clone()} size={250} />
                                 </div>
                                 <div class="clock-input-section">
-                                    <p class="clock-instruction">{"Skriv tiden i format TT:MM (t.ex. 03:30 eller 12:15)"}</p>
+                                    <p class="clock-instruction">{"Skriv tiden i format TT:MM eller TTMM (t.ex. 12:15 eller 1215)"}</p>
                                     <form onsubmit={on_submit}>
                                         <input
                                             type="text"
