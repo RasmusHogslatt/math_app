@@ -21,7 +21,6 @@ pub fn quiz_select(props: &QuizSelectionProps) -> Html {
     // State to track which subject sections are expanded (true = expanded, false = collapsed)
     // Initialize all sections as collapsed (false)
     let collapsed_states = use_state(|| {
-        
         // Optional: Initialize based on existing difficulties, or leave empty
         // If left empty, sections will default to collapsed when first encountered.
         // Or, you can pre-populate if needed:
@@ -39,10 +38,7 @@ pub fn quiz_select(props: &QuizSelectionProps) -> Html {
                 // Skip NoCourse from the list
                 continue;
             }
-            grouped
-                .entry(course.subject())
-                .or_default()
-                .push(*course);
+            grouped.entry(course.subject()).or_default().push(*course);
         }
         grouped
     });
@@ -61,6 +57,7 @@ pub fn quiz_select(props: &QuizSelectionProps) -> Html {
                         Subject::Geometry => "geometry",
                         Subject::Statisitics => "statistics",
                         Subject::Algebra => "algebra",
+                        Subject::Time => "time",
                         Subject::Random => "random",
                     };
                     let subject_name = match subject {
@@ -72,6 +69,7 @@ pub fn quiz_select(props: &QuizSelectionProps) -> Html {
                         Subject::Geometry => "Geometri",
                         Subject::Statisitics => "Statistik",
                         Subject::Algebra => "Algebra",
+                        Subject::Time => "Tid",
                         Subject::Random => "Blandat",
                     };
 

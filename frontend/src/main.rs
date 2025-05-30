@@ -51,6 +51,7 @@ fn app() -> Html {
         Quiz::PercentChange,
         Quiz::Expression,
         Quiz::NegativeValues,
+        Quiz::ClockReading,
     ]);
 
     let course = use_state(|| Quiz::NoCourse);

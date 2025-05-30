@@ -14,3 +14,5 @@ pub mod choice_button_quiz;
 pub use choice_button_quiz::*;
 pub mod top_users;
 pub use top_users::*;
+pub mod analog_clock;
+pub use analog_clock::*;

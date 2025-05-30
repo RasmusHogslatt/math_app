@@ -34,3 +34,5 @@ pub mod division_1_10;
 pub use division_1_10::*;
 pub mod negative_values;
 pub use negative_values::*;
+pub mod clock_reading;
+pub use clock_reading::*;

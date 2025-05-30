@@ -20,6 +20,7 @@ pub enum Subject {
     Geometry,
     Statisitics,
     Algebra,
+    Time,
     Random,
 }
 
@@ -44,6 +45,7 @@ pub enum Quiz {
     PercentChange,
     Expression,
     NegativeValues,
+    ClockReading,
 }
 
 impl Display for Quiz {
@@ -72,6 +74,7 @@ impl Display for Quiz {
             Quiz::PercentChange => write!(f, "Procentuell förändring"),
             Quiz::Expression => write!(f, "Matematiska uttryck"),
             Quiz::NegativeValues => write!(f, "Negativa tal"),
+            Quiz::ClockReading => write!(f, "Analoga klockan"),
         }
     }
 }
@@ -98,6 +101,7 @@ impl Quiz {
             Quiz::PercentChange => Subject::Statisitics,
             Quiz::Expression => Subject::Algebra,
             Quiz::NegativeValues => Subject::Number,
+            Quiz::ClockReading => Subject::Time,
         }
     }
 
@@ -122,6 +126,7 @@ impl Quiz {
             Quiz::PercentChange => 10,
             Quiz::Expression => 10,
             Quiz::NegativeValues => 10,
+            Quiz::ClockReading => 10,
         }
     }
 }
@@ -159,6 +164,7 @@ pub enum QuestionBox {
     SevenPercentChange(PercentChangeQuestion),
     EightExpression(ExpressionQuestion),
     NegativeValues(NegativeValuesQuestion),
+    ClockReading(ClockReadingQuestion),
 }
 
 impl Question for QuestionBox {
@@ -182,6 +188,7 @@ impl Question for QuestionBox {
             QuestionBox::SevenPercentChange(q) => q.prompt(),
             QuestionBox::EightExpression(q) => q.prompt(),
             QuestionBox::NegativeValues(q) => q.prompt(),
+            QuestionBox::ClockReading(q) => q.prompt(),
         }
     }
 
@@ -205,6 +212,7 @@ impl Question for QuestionBox {
             QuestionBox::SevenPercentChange(q) => q.answer(),
             QuestionBox::EightExpression(q) => q.answer(),
             QuestionBox::NegativeValues(q) => q.answer(),
+            QuestionBox::ClockReading(q) => q.answer(),
         }
     }
 
@@ -228,6 +236,7 @@ impl Question for QuestionBox {
             QuestionBox::SevenPercentChange(q) => q.check_answer(answer),
             QuestionBox::EightExpression(q) => q.check_answer(answer),
             QuestionBox::NegativeValues(q) => q.check_answer(answer),
+            QuestionBox::ClockReading(q) => q.check_answer(answer),
         }
     }
 }
@@ -271,6 +280,7 @@ pub fn generate_questions(quiz_type: Quiz, count: usize) -> Vec<QuestionBox> {
             Quiz::PercentChange => QuestionBox::SevenPercentChange(PercentChangeQuestion::random()),
             Quiz::Expression => QuestionBox::EightExpression(ExpressionQuestion::random()),
             Quiz::NegativeValues => QuestionBox::NegativeValues(NegativeValuesQuestion::random()),
+            Quiz::ClockReading => QuestionBox::ClockReading(ClockReadingQuestion::random()),
         };
 
         questions.push(question);

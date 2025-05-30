@@ -279,7 +279,10 @@ textarea {
 
     &.subject-algebra {
         border-left: 4px solid #9c27b0;
+    }
 
+    &.subject-time {
+        border-left: 4px solid #795548; // Brown color for time-related subjects
     }
 
     &.subject-random {
@@ -963,6 +966,173 @@ textarea {
 
         &:hover {
             transform: scale(1.5);
+        }
+    }
+}
+
+.analog-clock-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0px 0; // Or adjust as needed for quiz layout
+    gap: 10px;
+
+    .period-indicator {
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-bottom: 15px;
+        padding: 8px 16px;
+        border-radius: $border-radius-small;
+        background-color: $panel-background;
+        border: 2px solid; // Border color will come from modifiers
+        box-shadow: 0 2px 4px hsla($neutral-hue, 20%, 50%, 0.1);
+        text-align: center;
+
+        &.morning {
+            color: $primary-color-dark;
+            border-color: $primary-color-light;
+            background-color: lighten($primary-color-light, 8%);
+        }
+
+        &.afternoon {
+            color: darken($accent-color, 20%); // Slightly darker for better contrast
+            border-color: lighten($accent-color, 20%);
+            background-color: lighten($accent-color, 38%);
+        }
+    }
+}
+
+.analog-clock-svg {
+    // width and height are set by attributes from Rust props.
+    // --clock-viewbox-size is set via inline style from Rust props.
+    // e.g., --clock-viewbox-size: 200; (no "px" needed for calculation if used directly)
+
+    .clock-face {
+        fill: lighten($background-color, 5%); // Slightly off-white face, or $panel-background
+        stroke: darken($border-color, 25%);
+        stroke-width: calc(var(--clock-viewbox-size, 200) * 0.01); // e.g., 2px for 200px size
+    }
+
+    .hour-marker {
+        stroke: $text-color-light;
+        stroke-width: calc(var(--clock-viewbox-size, 200) * 0.0125); // e.g., 2.5px for 200px
+        stroke-linecap: round;
+    }
+
+    .minute-marker {
+        stroke: $border-color;
+        stroke-width: calc(var(--clock-viewbox-size, 200) * 0.0075); // e.g., 1.5px for 200px
+        stroke-linecap: round;
+    }
+
+    .hour-number {
+        font-family: $font-family-base;
+        // Example: if 200px clock has 14px font, ratio is 14/200 = 0.07
+        font-size: calc(var(--clock-viewbox-size, 200) * 0.08); // e.g., 16px for 200px
+        font-weight: 600;
+        fill: $text-color;
+        text-anchor: middle; // Horizontally center
+        dominant-baseline: central; // Vertically center (approximates for single line text)
+    }
+
+    .hour-hand {
+        stroke: darken($text-color, 25%); // Darker for more prominence
+        stroke-width: calc(var(--clock-viewbox-size, 200) * 0.025); // e.g., 5px for 200px
+        stroke-linecap: round;
+        filter: drop-shadow(0 1px 2px hsla(0, 0%, 0%, 0.25));
+        transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); // Smooth hand movement if time updates
+    }
+
+    .minute-hand {
+        stroke: $text-color;
+        stroke-width: calc(var(--clock-viewbox-size, 200) * 0.0175); // e.g., 3.5px for 200px
+        stroke-linecap: round;
+        filter: drop-shadow(0 1px 2px hsla(0, 0%, 0%, 0.2));
+        transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); // Smooth hand movement
+    }
+
+    .center-dot {
+        fill: $primary-color;
+        stroke: darken($primary-color, 20%);
+        stroke-width: calc(var(--clock-viewbox-size, 200) * 0.005); // e.g., 1px for 200px
+        // r attribute controls the radius of the circle
+        r: calc(var(--clock-viewbox-size, 200) * 0.02); // e.g., 4px radius for 200px size
+        filter: drop-shadow(0 1px 2px hsla(0, 0%, 0%, 0.3));
+    }
+}
+
+.clock-question {
+    // Matches the class in your Rust code
+    width: 100%; // Or max-width if it's inside a panel
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px; // Space between prompt, clock, and input section
+
+    h2 {
+        // Styles for "Vad visar klockan..." prompt
+        font-size: 1.6rem;
+        margin-bottom: 0; // Gap handles spacing
+        color: $text-color;
+        text-align: center;
+        line-height: 1.4;
+        font-family: 'Noto Sans Math', $font-family-base; // Optional if no math symbols
+    }
+
+    .clock-display {
+        // The .analog-clock-container and .analog-clock-svg styles
+        // from the previous answer should still apply if the <AnalogClock> component
+        // renders those classes.
+        // No specific styles needed here unless you want to add margin/padding around the clock.
+        margin-bottom: 10px; // Example: add some space below the clock
+    }
+
+    .clock-input-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px; // Space between instruction and form
+
+        .clock-instruction {
+            font-size: 0.95rem;
+            color: $text-color-light;
+            text-align: center;
+            margin-bottom: 0; // Gap handles spacing
+        }
+
+        form {
+            display: flex;
+            gap: 10px; // Space between input and button
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+
+            .clock-time-input {
+                // Styles for your specific clock time input
+                min-width: 100px;
+                max-width: 140px; // Adjusted slightly
+                padding: 10px 12px;
+                font-size: 1.2rem;
+                text-align: center;
+                font-family: 'Noto Sans Math', $font-family-base;
+                border-radius: $border-radius-small;
+                border: 1px solid $border-color; // Ensure it has basic input styling
+
+                &:focus {
+                    outline: none;
+                    border-color: $primary-color;
+                    box-shadow: 0 0 0 3px hsla($primary-hue, 70%, 55%, 0.2);
+                }
+            }
+
+            .clock-submit-btn {
+                // Styles for your specific clock submit button
+                @include button-style($secondary-color); // Apply the base button style
+                padding: 12px 25px; // Match padding of other quiz submit buttons
+                // font-size: $font-size-base;          // This is handled by the mixin
+                // If you need to override, you can set it explicitly:
+                // font-size: 1rem; (or whatever $font-size-base is)
+            }
         }
     }
 }

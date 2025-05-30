@@ -1,5 +1,5 @@
 use crate::{
-    components::ChoiceButtonQuizComponent,
+    components::{AnalogClock, ChoiceButtonQuizComponent},
     quiz::{Question, QuestionBox},
     quizzes::{FractionComparisonQuestion, NumberComparisonQuestion},
 };
@@ -75,6 +75,31 @@ pub fn quiz_session(props: &QuizSectionProps) -> Html {
                                 question={question.clone()}
                                 on_answer={props.on_answer.clone()}
                             />
+                        }
+                    },
+                    QuestionBox::ClockReading(question) => {
+                        html! {
+                            <div class="clock-question">
+                                <h2>{props.question.display()}</h2>
+                                <div class="clock-display">
+                                    <AnalogClock question={question.clone()} size={250} />
+                                </div>
+                                <div class="clock-input-section">
+                                    <p class="clock-instruction">{"Skriv tiden i format TT:MM (t.ex. 03:30 eller 12:15)"}</p>
+                                    <form onsubmit={on_submit}>
+                                        <input
+                                            type="text"
+                                            ref={input_ref}
+                                            value={(*answer).clone()}
+                                            oninput={on_input}
+                                            placeholder="TT:MM"
+                                            // pattern="[0-9]{1,2}:[0-9]{2}"
+                                            class="clock-time-input"
+                                        />
+                                        <button type="submit" class="clock-submit-btn">{"Submit"}</button>
+                                    </form>
+                                </div>
+                            </div>
                         }
                     },
                     // Example: If you add a new question type that uses this component
