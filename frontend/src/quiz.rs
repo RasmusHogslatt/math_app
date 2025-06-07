@@ -33,7 +33,7 @@ pub enum Quiz {
     Multiplication1_10,
     Multiplication1_20,
     Division1_10,
-    SquareArea,
+    Area,
     FirstOrderEquation,
     FirstDegreeDerivativeQuestion,
     NumberComparison,
@@ -46,6 +46,7 @@ pub enum Quiz {
     Expression,
     NegativeValues,
     ClockReading,
+    Circumference,
 }
 
 impl Display for Quiz {
@@ -58,7 +59,8 @@ impl Display for Quiz {
             Quiz::Multiplication1_10 => write!(f, "Multiplikation 1-10"),
             Quiz::Multiplication1_20 => write!(f, "Multiplikation 1-20"),
             Quiz::Division1_10 => write!(f, "Division 1-10"),
-            Quiz::SquareArea => write!(f, "Area"),
+            Quiz::Area => write!(f, "Area"),
+            Quiz::Circumference => write!(f, "Omkrets"),
             Quiz::FirstOrderEquation => {
                 write!(f, "Första ordningens ekvation")
             }
@@ -89,7 +91,8 @@ impl Quiz {
             Quiz::Multiplication1_10 => Subject::Multiplication,
             Quiz::Multiplication1_20 => Subject::Multiplication,
             Quiz::Division1_10 => Subject::Division,
-            Quiz::SquareArea => Subject::Geometry,
+            Quiz::Area => Subject::Geometry,
+            Quiz::Circumference => Subject::Geometry,
             Quiz::FirstOrderEquation => Subject::Algebra,
             Quiz::FirstDegreeDerivativeQuestion => Subject::Algebra,
             Quiz::NumberComparison => Subject::Number,
@@ -114,7 +117,8 @@ impl Quiz {
             Quiz::Multiplication1_10 => 10,
             Quiz::Multiplication1_20 => 10,
             Quiz::Division1_10 => 10,
-            Quiz::SquareArea => 10,
+            Quiz::Area => 10,
+            Quiz::Circumference => 10,
             Quiz::FirstOrderEquation => 10,
             Quiz::FirstDegreeDerivativeQuestion => 10,
             Quiz::NumberComparison => 10,
@@ -153,6 +157,7 @@ pub enum QuestionBox {
     Multiplication1_20(MultiplicationQuestion1_20),
     Division1_10(DivisionQuestion1_10),
     Area(AreaQuestion),
+    Circumference(CircumferenceQuestion),
     FirstOrderEquationQuestion(FirstOrderEquationQuestion),
     FirstDegreeDerivativeQuestion(FirstDegreeDerivativeQuestion),
     NumberComparison(NumberComparisonQuestion),
@@ -177,6 +182,7 @@ impl Question for QuestionBox {
             QuestionBox::Multiplication1_20(q) => q.prompt(),
             QuestionBox::Division1_10(q) => q.prompt(),
             QuestionBox::Area(q) => q.prompt(),
+            QuestionBox::Circumference(q) => q.prompt(),
             QuestionBox::FirstOrderEquationQuestion(q) => q.prompt(),
             QuestionBox::FirstDegreeDerivativeQuestion(q) => q.prompt(),
             QuestionBox::NumberComparison(q) => q.prompt(),
@@ -201,6 +207,7 @@ impl Question for QuestionBox {
             QuestionBox::Multiplication1_20(q) => q.answer(),
             QuestionBox::Division1_10(q) => q.answer(),
             QuestionBox::Area(q) => q.answer(),
+            QuestionBox::Circumference(q) => q.answer(),
             QuestionBox::FirstOrderEquationQuestion(q) => q.answer(),
             QuestionBox::FirstDegreeDerivativeQuestion(q) => q.answer(),
             QuestionBox::NumberComparison(q) => q.answer(),
@@ -225,6 +232,7 @@ impl Question for QuestionBox {
             QuestionBox::Multiplication1_20(q) => q.check_answer(answer),
             QuestionBox::Division1_10(q) => q.check_answer(answer),
             QuestionBox::Area(q) => q.check_answer(answer),
+            QuestionBox::Circumference(q) => q.check_answer(answer),
             QuestionBox::FirstOrderEquationQuestion(q) => q.check_answer(answer),
             QuestionBox::FirstDegreeDerivativeQuestion(q) => q.check_answer(answer),
             QuestionBox::NumberComparison(q) => q.check_answer(answer),
@@ -259,7 +267,8 @@ pub fn generate_questions(quiz_type: Quiz, count: usize) -> Vec<QuestionBox> {
                 QuestionBox::Multiplication1_20(MultiplicationQuestion1_20::random())
             }
             Quiz::Division1_10 => QuestionBox::Division1_10(DivisionQuestion1_10::random()),
-            Quiz::SquareArea => QuestionBox::Area(AreaQuestion::random()),
+            Quiz::Area => QuestionBox::Area(AreaQuestion::random()),
+            Quiz::Circumference => QuestionBox::Circumference(CircumferenceQuestion::random()),
             Quiz::NoCourse => QuestionBox::Addition1_10(AdditionQuestion1_10::random()),
             Quiz::FirstOrderEquation => {
                 QuestionBox::FirstOrderEquationQuestion(FirstOrderEquationQuestion::random())
