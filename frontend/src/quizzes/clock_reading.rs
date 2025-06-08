@@ -29,7 +29,22 @@ impl ClockReadingQuestion {
         }
     }
 
-    pub fn random() -> Self {
+    pub fn random_simple() -> Self {
+        let mut rng = rand::rng();
+
+        // Generate random hour
+        let display_hour = rng.random_range(1..=12);
+
+        // Randomly choose between 00 and 30 minutes
+        let minute = if rng.random_bool(0.5) { 0 } else { 30 };
+
+        // Randomly choose AM or PM
+        let is_afternoon = rng.random_bool(0.5); // gen_bool(0.5) is a neat way for 50/50 chance
+
+        Self::new(display_hour, minute, is_afternoon)
+    }
+
+    pub fn random_five_minute_intervals() -> Self {
         let mut rng = rand::rng();
 
         // Generate random time

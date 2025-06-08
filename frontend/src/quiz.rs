@@ -46,6 +46,7 @@ pub enum Quiz {
     Expression,
     NegativeValues,
     ClockReading,
+    ClockReadingSimple,
     Circumference,
     RomanNumerals,
 }
@@ -77,6 +78,7 @@ impl Display for Quiz {
             Quiz::PercentChange => write!(f, "Procentuell förändring"),
             Quiz::Expression => write!(f, "Matematiska uttryck"),
             Quiz::NegativeValues => write!(f, "Negativa tal"),
+            Quiz::ClockReadingSimple => write!(f, "Analoga klockan (halvtimmar)"),
             Quiz::ClockReading => write!(f, "Analoga klockan"),
             Quiz::RomanNumerals => write!(f, "Romerska siffror"),
         }
@@ -107,6 +109,7 @@ impl Quiz {
             Quiz::Expression => Subject::Algebra,
             Quiz::NegativeValues => Subject::Number,
             Quiz::ClockReading => Subject::Time,
+            Quiz::ClockReadingSimple => Subject::Time,
             Quiz::RomanNumerals => Subject::Random,
         }
     }
@@ -134,6 +137,7 @@ impl Quiz {
             Quiz::Expression => 10,
             Quiz::NegativeValues => 10,
             Quiz::ClockReading => 10,
+            Quiz::ClockReadingSimple => 10,
             Quiz::RomanNumerals => 10,
         }
     }
@@ -297,7 +301,12 @@ pub fn generate_questions(quiz_type: Quiz, count: usize) -> Vec<QuestionBox> {
             Quiz::PercentChange => QuestionBox::SevenPercentChange(PercentChangeQuestion::random()),
             Quiz::Expression => QuestionBox::EightExpression(ExpressionQuestion::random()),
             Quiz::NegativeValues => QuestionBox::NegativeValues(NegativeValuesQuestion::random()),
-            Quiz::ClockReading => QuestionBox::ClockReading(ClockReadingQuestion::random()),
+            Quiz::ClockReading => {
+                QuestionBox::ClockReading(ClockReadingQuestion::random_five_minute_intervals())
+            }
+            Quiz::ClockReadingSimple => {
+                QuestionBox::ClockReading(ClockReadingQuestion::random_simple())
+            }
             Quiz::RomanNumerals => QuestionBox::RomanNumerals(RomanNumeralsQuestion::random()),
         };
 

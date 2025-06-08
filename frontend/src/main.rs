@@ -53,6 +53,7 @@ fn app() -> Html {
         Quiz::Expression,
         Quiz::NegativeValues,
         Quiz::ClockReading,
+        Quiz::ClockReadingSimple,
         Quiz::RomanNumerals,
     ]);
 

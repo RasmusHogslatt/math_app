@@ -39,16 +39,16 @@ pub struct RomanNumeralsQuestion {
 
 impl RomanNumeralsQuestion {
     pub fn random() -> Self {
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
         // Generate a number in a range that produces interesting numerals
-        let correct_answer = rng.gen_range(1..=100);
+        let correct_answer = rng.random_range(1..=100);
         let roman_numeral = to_roman(correct_answer);
 
         let mut choices = vec![correct_answer];
         // Generate 3 wrong answers for a total of 4 choices
         while choices.len() < 4 {
             // Generate wrong answers that are somewhat close to the correct one
-            let offset = rng.gen_range(-10..=10);
+            let offset = rng.random_range(-10..=10);
             // Ensure offset is not zero and result is positive
             if offset == 0 {
                 continue;

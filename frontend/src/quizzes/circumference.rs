@@ -1,6 +1,4 @@
 use core::f64;
-use std::fmt;
-
 use rand::Rng;
 
 use crate::{quiz::Question, quizzes::ShapeType};

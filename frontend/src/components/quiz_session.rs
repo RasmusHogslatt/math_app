@@ -102,15 +102,6 @@ pub fn quiz_session(props: &QuizSectionProps) -> Html {
                             </div>
                         }
                     },
-                    // Example: If you add a new question type that uses this component
-                    // QuestionBox::YourNewMultiChoiceQuestion(question) => {
-                    // html! {
-                    // <ChoiceButtonQuizComponent<YourNewMultiChoiceQuestionType>
-                    // question={question.clone()}
-                    // on_answer={props.on_answer.clone()}
-                    // />
-                    // }
-                    // },
                      QuestionBox::RomanNumerals(question) => {
                         html! {
                             <ChoiceButtonQuizComponent<RomanNumeralsQuestion>
