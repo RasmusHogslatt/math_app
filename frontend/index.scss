@@ -471,7 +471,6 @@ textarea {
     }
 }
 
-// --- Component: Number Comparison ---
 .choice-button-quiz-container {
     width: 100%; // Takes width from parent (.quiz-section)
     text-align: center;
@@ -775,9 +774,7 @@ textarea {
     }
 
     .question h2,
-    .number-comparison-container h2 {
-        font-size: 1.5rem;
-    }
+
 
     .question form,
     .comparison-options {

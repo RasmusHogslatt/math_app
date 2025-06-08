@@ -1,15 +1,11 @@
 pub mod leaderboard;
 pub use leaderboard::*;
-pub mod number_comparison;
-pub use number_comparison::*;
 pub(crate) mod quiz_select;
 pub use quiz_select::*;
 pub mod quiz_session;
 pub use quiz_session::*;
 pub mod quiz_result;
 pub use quiz_result::*;
-pub mod fraction_comparison_component;
-pub use fraction_comparison_component::*;
 pub mod choice_button_quiz;
 pub use choice_button_quiz::*;
 pub mod top_users;

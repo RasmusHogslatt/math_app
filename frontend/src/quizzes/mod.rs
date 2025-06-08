@@ -38,3 +38,5 @@ pub mod clock_reading;
 pub use clock_reading::*;
 pub mod circumference;
 pub use circumference::*;
+pub mod roman_numerals;
+pub use roman_numerals::*;

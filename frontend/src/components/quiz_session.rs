@@ -1,7 +1,7 @@
 use crate::{
     components::{AnalogClock, ChoiceButtonQuizComponent},
     quiz::{Question, QuestionBox},
-    quizzes::{FractionComparisonQuestion, NumberComparisonQuestion},
+    quizzes::{FractionComparisonQuestion, NumberComparisonQuestion, RomanNumeralsQuestion},
 };
 use web_time::Duration;
 use yew::prelude::*;
@@ -111,6 +111,14 @@ pub fn quiz_session(props: &QuizSectionProps) -> Html {
                     // />
                     // }
                     // },
+                     QuestionBox::RomanNumerals(question) => {
+                        html! {
+                            <ChoiceButtonQuizComponent<RomanNumeralsQuestion>
+                                question={question.clone()}
+                                on_answer={props.on_answer.clone()}
+                            />
+                        }
+                    },
                     _ => {
                         html! {
                             <div class="question">

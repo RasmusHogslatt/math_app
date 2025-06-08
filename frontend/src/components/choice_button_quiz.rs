@@ -18,9 +18,7 @@ where
     let choices = props.question.get_choices();
 
     html! {
-        <div class="choice-button-quiz-container"> // You can name this class as you like
-            // The main question prompt (e.g., "Vilket värde är störst: ... eller ...?")
-            // comes from the Question trait's display method.
+        <div class="choice-button-quiz-container">
             <h2>{ props.question.display() }</h2>
 
             <div class="choice-options"> // Container for the buttons

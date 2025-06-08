@@ -47,6 +47,7 @@ pub enum Quiz {
     NegativeValues,
     ClockReading,
     Circumference,
+    RomanNumerals,
 }
 
 impl Display for Quiz {
@@ -77,6 +78,7 @@ impl Display for Quiz {
             Quiz::Expression => write!(f, "Matematiska uttryck"),
             Quiz::NegativeValues => write!(f, "Negativa tal"),
             Quiz::ClockReading => write!(f, "Analoga klockan"),
+            Quiz::RomanNumerals => write!(f, "Romerska siffror"),
         }
     }
 }
@@ -105,6 +107,7 @@ impl Quiz {
             Quiz::Expression => Subject::Algebra,
             Quiz::NegativeValues => Subject::Number,
             Quiz::ClockReading => Subject::Time,
+            Quiz::RomanNumerals => Subject::Random,
         }
     }
 
@@ -131,6 +134,7 @@ impl Quiz {
             Quiz::Expression => 10,
             Quiz::NegativeValues => 10,
             Quiz::ClockReading => 10,
+            Quiz::RomanNumerals => 10,
         }
     }
 }
@@ -170,6 +174,7 @@ pub enum QuestionBox {
     EightExpression(ExpressionQuestion),
     NegativeValues(NegativeValuesQuestion),
     ClockReading(ClockReadingQuestion),
+    RomanNumerals(RomanNumeralsQuestion),
 }
 
 impl Question for QuestionBox {
@@ -195,6 +200,7 @@ impl Question for QuestionBox {
             QuestionBox::EightExpression(q) => q.prompt(),
             QuestionBox::NegativeValues(q) => q.prompt(),
             QuestionBox::ClockReading(q) => q.prompt(),
+            QuestionBox::RomanNumerals(q) => q.prompt(),
         }
     }
 
@@ -220,6 +226,7 @@ impl Question for QuestionBox {
             QuestionBox::EightExpression(q) => q.answer(),
             QuestionBox::NegativeValues(q) => q.answer(),
             QuestionBox::ClockReading(q) => q.answer(),
+            QuestionBox::RomanNumerals(q) => q.answer(),
         }
     }
 
@@ -245,6 +252,7 @@ impl Question for QuestionBox {
             QuestionBox::EightExpression(q) => q.check_answer(answer),
             QuestionBox::NegativeValues(q) => q.check_answer(answer),
             QuestionBox::ClockReading(q) => q.check_answer(answer),
+            QuestionBox::RomanNumerals(q) => q.check_answer(answer),
         }
     }
 }
@@ -290,6 +298,7 @@ pub fn generate_questions(quiz_type: Quiz, count: usize) -> Vec<QuestionBox> {
             Quiz::Expression => QuestionBox::EightExpression(ExpressionQuestion::random()),
             Quiz::NegativeValues => QuestionBox::NegativeValues(NegativeValuesQuestion::random()),
             Quiz::ClockReading => QuestionBox::ClockReading(ClockReadingQuestion::random()),
+            Quiz::RomanNumerals => QuestionBox::RomanNumerals(RomanNumeralsQuestion::random()),
         };
 
         questions.push(question);
